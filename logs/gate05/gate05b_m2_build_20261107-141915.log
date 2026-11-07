@@ -1,0 +1,122 @@
+
+===== 0. Meta =====
+Gate        : 05b-1 (build RP016 m2 in its own tree)
+Mode        : prepare-only
+Timestamp   : 20261107-141915
+Script      : scripts/gate05b_build.sh  sha256=0e948eec7c3e1ffff9e719057656ab95dcf6e1c30ae277c4ff5becbb2add371f
+
+===== 1. Pre-checks =====
+[OK]   MemAvailable 15 GiB
+[OK]   free disk 432 GiB
+[OK]   M1 reference tree present (it is not modified by this script)
+Target   : m2   branch rp016_m2_aplic_up_v2   pinned 8fba3ebe3c5b15b9fff51c310da1ee4195d2af4d
+Tree     : work/buildroot-m2
+BR2_DL_DIR: work/dl-g05
+
+===== 2. Buildroot tree (pinned) =====
+[OK]   remote rp016_m2_aplic_up_v2 tip = pinned commit
+$ git clone --quiet -b 'rp016_m2_aplic_up_v2' 'https://gitlab.com/riseproject/riscv-optee/buildroot.git' '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2'
+[rc=0]
+$ git checkout --quiet -B 'rp016_m2_aplic_up_v2' '8fba3ebe3c5b15b9fff51c310da1ee4195d2af4d'
+[rc=0]
+[OK]   HEAD 8fba3ebe3c5b15b9fff51c310da1ee4195d2af4d
+$ git log -1 --format='%cs %s'
+2026-05-28 makefile: update the QEMU start script
+[rc=0]
+
+===== 3. Shared download directory (hard links to M1 tarballs, git caches excluded) =====
+[OK]   seeded work/dl-g05 with 21487 hard-linked files (M1 dl unchanged)
+
+===== 4. Components (read from local.mk and the defconfig, resolved to SHAs) =====
+-- local.mk overrides --
+[OK]   BM_APP    custom/bm-app    rp016_m1 @ 97545c35a74ad387f7790b02a35b0f2b4d29bb6e
+[OK]   OPENSBI   custom/opensbi   rp016_m2_aplic_up_v2 @ 4533a2a938928d89d41f6ad144272567915a8435
+[OK]   OPTEE_OS  custom/optee-os  rp016_m1 @ 814978eb15b92c3b97255a8c000f44cd84aac008
+[OK]   QEMU      custom/qemu      rp016_m1 @ 9c23f2a7b0b45277693a14074b1aaa827eecdb92
+-- defconfig custom git repos --
+[OK]   BR2_LINUX_KERNEL     rp016_m1 @ 2912ca616fc806dbeeba2e1ac7a157e0843d6987 (pinned in .config)
+[INFO] BR2_TARGET_OPTEE_OS  overridden by local.mk (defconfig version rp016_m1 not used)
+[INFO] BR2_TARGET_OPENSBI   overridden by local.mk (defconfig version rp016_m1 not used)
+[OK]   BR2_TARGET_UBOOT     rp016_m1 @ 32bdb252fab83028768a269fb304b9356547ccbd (pinned in .config)
+pins written to logs/gate05/gate05b_m2_pins_20261107-141915.txt
+
+===== 5. Pin custom/ checkouts (local branch at the pinned SHA) =====
+
+--- custom/bm-app
+$ git clone --quiet 'https://gitlab.com/riseproject/riscv-optee/bm-app.git' 'custom/bm-app'
+[rc=0]
+$ git -C 'custom/bm-app' checkout --quiet -B 'rp016_m1' '97545c35a74ad387f7790b02a35b0f2b4d29bb6e'
+[rc=0]
+[OK]   custom/bm-app HEAD = 97545c35a74ad387f7790b02a35b0f2b4d29bb6e (branch rp016_m1)
+
+--- custom/opensbi
+$ git clone --quiet 'https://gitlab.com/riseproject/riscv-optee/opensbi.git' 'custom/opensbi'
+[rc=0]
+$ git -C 'custom/opensbi' checkout --quiet -B 'rp016_m2_aplic_up_v2' '4533a2a938928d89d41f6ad144272567915a8435'
+[rc=0]
+[OK]   custom/opensbi HEAD = 4533a2a938928d89d41f6ad144272567915a8435 (branch rp016_m2_aplic_up_v2)
+
+--- custom/optee-os
+$ git clone --quiet 'https://gitlab.com/riseproject/riscv-optee/optee_os.git' 'custom/optee-os'
+[rc=0]
+$ git -C 'custom/optee-os' checkout --quiet -B 'rp016_m1' '814978eb15b92c3b97255a8c000f44cd84aac008'
+[rc=0]
+[OK]   custom/optee-os HEAD = 814978eb15b92c3b97255a8c000f44cd84aac008 (branch rp016_m1)
+
+--- custom/qemu
+$ git clone --quiet 'https://gitlab.com/riseproject/riscv-optee/qemu.git' 'custom/qemu'
+[rc=0]
+$ git -C 'custom/qemu' checkout --quiet -B 'rp016_m1' '9c23f2a7b0b45277693a14074b1aaa827eecdb92'
+[rc=0]
+[OK]   custom/qemu HEAD = 9c23f2a7b0b45277693a14074b1aaa827eecdb92 (branch rp016_m1)
+
+===== 6. Configure (upstream defconfig + SHAs in .config) =====
+$ make -s qemu_riscv64_virt_optee_defconfig
+In file included from <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/output/build/buildroot-config/zconf.tab.c:2484:
+./util.c: In function ‘file_write_dep’:
+./util.c:86:26: warning: ‘%s’ directive writing 10 or more bytes into a region of size between 1 and 4097 [-Wformat-overflow=]
+   86 |         sprintf(buf2, "%s%s", dir, name);
+      |                          ^~
+./util.c:86:9: note: ‘sprintf’ output 11 or more bytes (assuming 4107) into a destination of size 4097
+   86 |         sprintf(buf2, "%s%s", dir, name);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/.config
+#
+[rc=0]
+$ utils/config --file .config --set-str BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION 2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[rc=0]
+$ utils/config --file .config --set-str BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION 32bdb252fab83028768a269fb304b9356547ccbd
+[rc=0]
+$ make -s olddefconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/.config
+#
+[rc=0]
+[OK]   .config BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION=2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[OK]   .config BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION=32bdb252fab83028768a269fb304b9356547ccbd
+$ make -s --no-print-directory printvars VARS='LINUX_VERSION UBOOT_VERSION OPENSBI_VERSION OPTEE_OS_VERSION QEMU_VERSION OPTEE_TEST_VERSION'
+[BR] QEMU override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/qemu
+[BR] QEMU branch: rp016_m1
+[BR] OpenSBI override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/opensbi
+[BR] OpenSBI branch: rp016_m2_aplic_up_v2
+[BR] OP-TEE OS override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/optee-os
+[BR] OP-TEE OS branch: rp016_m1
+[BR] Bare-metal app override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/bm-app
+[BR] Bare-metal app branch: rp016_m1
+LINUX_VERSION=2912ca616fc806dbeeba2e1ac7a157e0843d6987
+OPENSBI_VERSION=custom
+OPTEE_OS_VERSION=custom
+OPTEE_TEST_VERSION=4.6.0
+QEMU_VERSION=custom
+UBOOT_VERSION=32bdb252fab83028768a269fb304b9356547ccbd
+[rc=0]
+
+[INFO] --prepare-only: stopped before the build
+
+===== 10. Summary =====
+Target          : m2 (rp016_m2_aplic_up_v2 @ 8fba3ebe3c5b)
+Mode            : prepare-only
+Failed checks   : 0
+Verdict         : PREPARED - run without --prepare-only to build
+Next            : upload logs/gate05/gate05b_m2_build_20261107-141915.log and its .sha256 manifest

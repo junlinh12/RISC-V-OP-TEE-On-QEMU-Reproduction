@@ -1,0 +1,9 @@
+buildroot|buildroot|https://gitlab.com/riseproject/riscv-optee/buildroot.git|rp022-m8-pmp-data-perms|6d7db0ab2bf7b8bf7e134948822aa6f0b7b43808
+local.mk|BM_APP|https://gitlab.com/riseproject/riscv-optee/bm-app.git|rp016_m3_virq_v2|cad8639a1489bbff36ce04302aa2d726a77dba12
+local.mk|OPENSBI|https://gitlab.com/riseproject/riscv-optee/opensbi.git|rp022-m2|a1cdb6f4c7f511e3d0d41fc89495aefbd559e0b7
+local.mk|OPTEE_OS|https://gitlab.com/riseproject/riscv-optee/optee_os.git|rp022-m8-pmp-data-perms-v2|c0214654e16ad0813e58659082e44ae3e85ba530
+subst|OPTEE_TEST|https://gitlab.com/riseproject/riscv-optee/optee_test.git|rp022-m8-pmp-data-perms|-
+local.mk|OPTEE_TEST|https://github.com/OP-TEE/optee_test.git|rp022-m8-pmp-data-perms|33e086a0bb6f33299806185229fb993fb3eb5e6d
+local.mk|QEMU|https://gitlab.com/riseproject/riscv-optee/qemu.git|rp016_m1|9c23f2a7b0b45277693a14074b1aaa827eecdb92
+defconfig|BR2_LINUX_KERNEL|https://gitlab.com/riseproject/riscv-optee/linux.git|dev-optee-mpxy-v9|9007f552b318522b0b36c78b838f70d9dd604d80
+defconfig|BR2_TARGET_UBOOT|https://gitlab.com/riseproject/riscv-optee/u-boot.git|dev-optee-mpxy-v5|32bdb252fab83028768a269fb304b9356547ccbd

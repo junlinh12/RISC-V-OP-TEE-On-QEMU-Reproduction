@@ -1,0 +1,131 @@
+
+===== 0. Meta =====
+Gate      : 02 pre-build memory diagnosis (read-only)
+Timestamp : 20261106-202026
+Script    : scripts/gate02_memory_check.sh  sha256=8708532dc29cf539e6d59c71df3a9ac3e44a1c2e2dca9c73bc3bd500165cd1d0
+$ uptime -p
+up 1 week, 4 days, 4 hours, 13 minutes
+[rc=0]
+$ free -h
+               total        used        free      shared  buff/cache   available
+Mem:            30Gi        17Gi       6.8Gi       2.6Gi       9.4Gi        12Gi
+Swap:          8.0Gi       3.2Gi       4.8Gi
+[rc=0]
+Note: in recent procps versions 'used' = total - available.
+
+===== 1. Breakdown of /proc/meminfo =====
+MemTotal                      :  30.72 GiB
+MemAvailable                  :  12.82 GiB
+MemFree                       :   6.79 GiB
+-- what occupies memory --
+Applications (AnonPages)      :  13.08 GiB
+Shared memory / tmpfs (Shmem) :   2.57 GiB
+Page cache (Cached-Shmem)     :   4.42 GiB  (mostly reclaimable)
+Buffers                       :   1.16 GiB
+Kernel slab, reclaimable      :   1.26 GiB
+Kernel slab, unreclaimable    :   0.69 GiB
+Page tables + kernel stacks   :   0.42 GiB
+Huge pages reserved (Hugetlb) :   0.00 GiB
+-- swap --
+SwapTotal                     :   8.00 GiB
+Swap used                     :   3.20 GiB
+SwapCached                    :   0.44 GiB
+Committed_AS                  : 175.60 GiB
+$ swapon --show
+NAME      TYPE SIZE USED PRIO
+/swap.img file   8G 3.2G   -1
+[rc=0]
+
+===== 2. Top 15 processes by resident memory (RSS) =====
+owner        pid      RSS        running   program
+me             3218    1.05 GiB  268.1 h   xdg-desktop-por
+me             3500    0.89 GiB  268.1 h   chrome
+me           175893    0.69 GiB  103.1 h   chrome
+me           179136    0.65 GiB  100.5 h   chrome
+me           151438    0.59 GiB  144.0 h   chrome
+me           815248    0.39 GiB   52.0 h   chrome
+me             2620    0.38 GiB  268.1 h   gnome-shell
+me           178521    0.37 GiB  100.7 h   chrome
+me             3550    0.32 GiB  268.1 h   chrome
+me           988832    0.29 GiB    0.0 h   chrome
+me           846434    0.28 GiB   46.4 h   chrome
+me           815260    0.28 GiB   52.0 h   chrome
+me             8578    0.28 GiB  266.5 h   chrome
+me            83429    0.28 GiB  214.0 h   chrome
+me           983369    0.28 GiB    1.2 h   chrome
+
+===== 3. RSS grouped by program and owner (top 15; shared pages are counted per process) =====
+owner        procs   RSS sum     program
+me            208    37.81 GiB   chrome
+me              3     1.09 GiB   xdg-desktop-por
+me              1     0.38 GiB   gnome-shell
+me              1     0.17 GiB   nautilus
+me              3     0.12 GiB   gjs
+me              1     0.10 GiB   gnome-terminal-
+root            1     0.06 GiB   systemd-journal
+me              1     0.05 GiB   evolution-alarm
+root            1     0.04 GiB   snapd
+root            1     0.04 GiB   fwupd
+me              1     0.04 GiB   tracker-miner-f
+me              1     0.04 GiB   ibus-engine-lib
+me              8     0.03 GiB   bash
+me              2     0.03 GiB   gnome-session-b
+me              1     0.03 GiB   update-notifier
+
+===== 4. RSS total per owner class =====
+me            314 procs    40.72 GiB
+root          301 procs     0.35 GiB
+system         17 procs     0.13 GiB
+logged-in users (distinct): 1   your sessions: 5
+
+===== 5. Swap used per program (top 10) =====
+me              4.31 GiB   chrome
+me              0.05 GiB   gnome-shell
+me              0.04 GiB   xdg-desktop-por
+me              0.04 GiB   nautilus
+me              0.02 GiB   Xwayland
+me              0.02 GiB   mutter-x11-fram
+me              0.01 GiB   pipewire-pulse
+me              0.01 GiB   gsd-xsettings
+me              0.01 GiB   gnome-terminal-
+system          0.00 GiB   tinyproxy
+
+===== 6. Memory charged to cgroups (includes page cache) =====
+-- user sessions --
+me           21.46 GiB
+-- system services (top 10) --
+  0.13 GiB  systemd-udevd.service
+  0.04 GiB  systemd-journald.service
+  0.03 GiB  snapd.service
+  0.03 GiB  fwupd.service
+  0.02 GiB  colord.service
+  0.02 GiB  NetworkManager.service
+  0.01 GiB  polkit.service
+  0.01 GiB  systemd-resolved.service
+  0.01 GiB  upower.service
+  0.01 GiB  unattended-upgrades.service
+-- inside your session (top 10 apps / scopes) --
+ 21.46 GiB  <EMAIL>
+ 19.73 GiB  app.slice
+ 13.65 GiB  app-gnome-google\x2dchrome-3500.scope
+  3.34 GiB  app-org.gnome.Terminal.slice
+  1.68 GiB  session.slice
+  1.13 GiB  app-com.google.Chrome-3500.scope
+  1.08 GiB  <EMAIL>
+  1.04 GiB  xdg-desktop-portal-gnome.service
+  0.35 GiB  dbus.service
+  0.12 GiB  org.freedesktop.IBus.session.GNOME.service
+
+===== 7. tmpfs usage (counted as Shmem) =====
+$ df -h -t tmpfs
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           3.1G  2.9M  3.1G   1% /run
+tmpfs            16G     0   16G   0% /dev/shm
+tmpfs           5.0M  8.0K  5.0M   1% /run/lock
+tmpfs           3.1G  184K  3.1G   1% /run/user/1000
+[rc=0]
+
+===== 9. Summary =====
+Failed commands : 0
+This script changed nothing. Decide on any action after reviewing the log.
+Next            : upload logs/gate02/gate02_memory_check_20261106-202026.log (the sanitized log) to the chat

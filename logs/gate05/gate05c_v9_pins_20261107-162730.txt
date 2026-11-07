@@ -1,0 +1,5 @@
+buildroot|buildroot|https://gitlab.com/riseproject/riscv-optee/buildroot.git|dev-optee-mpxy-v9|b5e20ca925d0784473c854fae92c3fc5931802ee
+tarball|BR2_LINUX_KERNEL|https://gitlab.com/riseproject/riscv-optee/linux/-/archive/9007f552b318522b0b36c78b838f70d9dd604d80/linux-dev-optee-mpxy-v9.tar.gz|-|9007f552b318522b0b36c78b838f70d9dd604d80
+tarball|BR2_TARGET_OPTEE_OS|https://gitlab.com/riseproject/riscv-optee/optee_os/-/archive/f1d355401a3213d076f0332fd5d98c1cae05993b/optee_os-dev-optee-mpxy-v9.tar.gz|-|f1d355401a3213d076f0332fd5d98c1cae05993b
+tarball|BR2_TARGET_OPENSBI|https://gitlab.com/riseproject/riscv-optee/opensbi/-/archive/a1cdb6f4c7f511e3d0d41fc89495aefbd559e0b7/opensbi-dev-optee-mpxy-v9.tar.gz|-|a1cdb6f4c7f511e3d0d41fc89495aefbd559e0b7
+tarball|BR2_TARGET_UBOOT|https://gitlab.com/riseproject/riscv-optee/u-boot/-/archive/32bdb252fab83028768a269fb304b9356547ccbd/u-boot-dev-optee-mpxy-v5.tar.gz|-|32bdb252fab83028768a269fb304b9356547ccbd

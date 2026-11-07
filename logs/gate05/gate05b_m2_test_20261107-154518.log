@@ -1,0 +1,111 @@
+
+===== 0. Meta =====
+Gate        : 05b-2 (m2 interrupt test with start-qemu-kernel.sh)
+Mode        : full
+Timestamp   : 20261107-154518
+Script      : scripts/gate05b_test.sh  sha256=4ad18fe863b96195b4730ec94ebe736d176498b317016ae1413e16172f51aa8d
+
+===== 1. Safety pre-checks =====
+[OK]   unprivileged user (uid 1000)
+[OK]   Buildroot QEMU: QEMU emulator version 10.1.93
+[OK]   scripts/gate05b_console.py  sha256=6f6e8bbc2aefc7c045ce0f782bb0018d6eb71c1f8d61a1d643a5e6e147c3abc8
+[OK]   ports 64321 / 64322 / 2200 are free
+-- shape of start-qemu-kernel.sh (must match what the test relies on) --
+[OK]   puts the Buildroot host/bin first in PATH
+[OK]   no option parsing (QEMU arguments are passed directly)
+[OK]   Linux console: virtio console on TCP 64321 (waits for a client)
+[OK]   QEMU machine with APLIC (-M virt,aia=aplic)
+[OK]   uses sdcard.img (protected with -snapshot)
+[OK]   hostfwd on all interfaces found 1 time(s) - will be restricted
+sdcard.img sha256 before: cc63f78d81f67f46c4c7cee611251de7c0b78b62ce628b96a567d521e96e7ec7
+
+===== 2. Loopback-only launcher (upstream start-qemu-kernel.sh is not modified) =====
+[OK]   start-qemu-kernel.loopback.sh generated: only 1 hostfwd address(es) differ
+
+===== 3. Run (QEMU with -snapshot, process group managed) =====
+[INFO] launcher started, process group 2355591
+[OK]   port 64321: 127.0.0.1:64321 
+[OK]   port 64322: not listening
+[OK]   port 2200: not listening
+[OK]   QEMU pid 2355601: -snapshot active
+[INFO] Linux console driver started (pid 2355638)
+[OK]   Linux logged in; first Linux checks done
+-- OpenSBI console: key tests --
+RESULT m2_key_a_handled_in_mmode PASS | M-mode APLIC handler got 'a'
+RESULT m2_key_b_handled_in_mmode PASS | M-mode APLIC handler got 'b'
+[15:45:19] connected to the Linux console (hvc0)
+[15:45:20] logged in as root
+[15:45:20] run   uname -a; nproc
+[15:45:20] done  rc=0
+[15:45:20] run   dmesg | grep -iE 'aplic|imsic|aia|irqchip|riscv-intc'
+[15:45:20] done  rc=0
+RESULT linux_aplic_registered PASS | [    0.228705] riscv-aplic d000000.interrupt-controller: 96 interrupts directly connected to 2 CPUs
+[15:45:20] run   cat /proc/interrupts
+[15:45:20] done  rc=0
+RESULT linux_aplic_direct_lines PASS | 12:virtio2, 14:virtio1, 15:virtio0, 16:101000.rtc
+[15:45:20] Linux side ready - waiting while keys are tested on the OpenSBI console
+[15:45:21] run   dd if=/dev/vda of=/dev/null bs=1M count=32 skip=64 2>&1 | tail -n 1
+[15:45:21] done  rc=0
+[15:45:21] run   cat /proc/interrupts
+[15:45:21] done  rc=0
+RESULT linux_aplic_counters PASS | APLIC-DIRECT total 694 -> 998
+[15:45:21] run   basename $(readlink /sys/block/vda/device)
+[15:45:21] done  rc=0
+[15:45:21] run   echo 1 > /proc/irq/15/smp_affinity_list
+[15:45:21] done  rc=0
+[15:45:21] run   cat /proc/interrupts
+[15:45:21] done  rc=0
+[15:45:21] run   dd if=/dev/vda of=/dev/null bs=1M count=32 skip=128 2>&1 | tail -n 1
+[15:45:21] done  rc=0
+[15:45:21] run   cat /proc/interrupts
+[15:45:21] done  rc=0
+RESULT linux_affinity_cpu1 PASS | irq 15 (virtio0): CPU0 +0, CPU1 +66
+[15:45:21] run   echo 0 > /proc/irq/15/smp_affinity_list
+[15:45:21] done  rc=0
+[15:45:21] run   cat /proc/interrupts
+[15:45:22] done  rc=0
+[15:45:22] run   dd if=/dev/vda of=/dev/null bs=1M count=32 skip=192 2>&1 | tail -n 1
+[15:45:22] done  rc=0
+[15:45:22] run   cat /proc/interrupts
+[15:45:22] done  rc=0
+RESULT linux_affinity_cpu0 PASS | irq 15 (virtio0): CPU0 +64, CPU1 +0
+[15:45:22] poweroff
+[rc=0] Linux console driver
+
+===== 4. Evidence (OpenSBI console) =====
+APLIC: matched node compatible riscv,aplic
+APLIC: parsed addr=0xd000000 targets_mmode=0
+APLIC: irqchip aplic cold init done
+APLIC: matched node compatible riscv,aplic
+APLIC: parsed addr=0xc000000 targets_mmode=1
+[APLIC TEST] Setup done. Type keys now.
+APLIC: irqchip aplic cold init done
+Standard SBI Extensions     : time,rfnc,ipi,base,hsm,srst,pmu,dbcn,fwft,legacy,dbtr,sse
+Domain0 Name                : root
+Boot HART ID                : 0
+[IRQCHIP] Calling handler for hwirq 10
+[IRQCHIP] Enter hwirq 10 raw handler
+[IRQCHIP] Calling hwirq 10 raw handler callback
+[APLIC] Enter registered hwirq 10 raw handler callback
+[APLIC TEST] UART got 'a'(0x61)
+[IRQCHIP] Calling handler for hwirq 10
+[IRQCHIP] Enter hwirq 10 raw handler
+[IRQCHIP] Calling hwirq 10 raw handler callback
+[APLIC] Enter registered hwirq 10 raw handler callback
+[IRQCHIP] Calling handler for hwirq 10
+[IRQCHIP] Enter hwirq 10 raw handler
+[IRQCHIP] Calling hwirq 10 raw handler callback
+[APLIC] Enter registered hwirq 10 raw handler callback
+[APLIC TEST] UART got 'b'(0x62)
+[IRQCHIP] Calling handler for hwirq 10
+[IRQCHIP] Enter hwirq 10 raw handler
+[IRQCHIP] Calling hwirq 10 raw handler callback
+[APLIC] Enter registered hwirq 10 raw handler callback
+[OK]   sdcard.img unchanged (cc63f78d81f67f46)
+
+===== 9. Summary =====
+Target          : m2
+Mode            : full
+Failed checks   : 0
+Verdict         : ALL m2 INTERRUPT CHECKS PASSED
+Next            : upload logs/gate05/gate05b_m2_test_20261107-154518.log and its .sha256 manifest

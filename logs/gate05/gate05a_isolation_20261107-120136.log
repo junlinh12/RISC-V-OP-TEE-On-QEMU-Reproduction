@@ -1,0 +1,119 @@
+
+===== 0. Meta =====
+Gate        : 05a (isolation demonstration + bare-metal app; M1 images, -snapshot)
+Mode        : full
+Timestamp   : 20261107-120136
+Script      : scripts/gate05a_isolation.sh  sha256=239e7edb89b789edfc380de86aec23a2a8f310b9e5402a1b06f788eb15ecd155
+
+===== 1. Safety pre-checks =====
+[OK]   unprivileged user (uid 1000)
+[OK]   Buildroot QEMU: QEMU emulator version 10.1.93
+[OK]   start-qemu.sh puts output/host/bin first in PATH
+[OK]   required images present
+[OK]   ports 64320 / 64321 / 2200 are free
+[OK]   scripts/gate05a_console.py  sha256=3ec32a2507e41f86bf8ec9b1247e20980bf35fd40ce2149a86e8f6c935143a79
+-- guest facts relevant to the Linux run (supplementary) --
+kernel  CONFIG_DEVMEM=y
+kernel  # CONFIG_STRICT_DEVMEM is not set
+guest   devmem present (/sbin/devmem)
+sdcard.img sha256 before: dec313128728f53573679bb80094c5307e48a7adc281aeeeff55c73bd75ed1c6
+
+===== 2. Loopback-only launcher (upstream start-qemu.sh is not modified) =====
+[OK]   launcher regenerated (only the hostfwd address differs); every boot adds -snapshot
+-- plan --
+U1  U-Boot md: control 0x80200000, probe 0xf1000000 (OP-TEE)
+U2  U-Boot md: control 0x80200000, probe 0x80100000 (OpenSBI)
+L   Linux devmem: control 0x0c000004 (PLIC), probes 0xf1000000 0x80100000
+BM  start-qemu-bm.sh (timeout 180 s)
+
+===== 3. Guest runs (all with -snapshot) =====
+
+--- run U1
+[NG]   console port not listening
+unknown option: -snapshot
+
+--- run U2
+[NG]   console port not listening
+unknown option: -snapshot
+
+--- run L
+[NG]   console port not listening
+unknown option: -snapshot
+[OK]   sdcard.img unchanged (dec313128728f535)
+
+===== 4. Bare-metal SBI test application (start-qemu-bm.sh) =====
+$ timeout 180 output/images/start-qemu-bm.sh
+[rc=124]
+[INFO] stopped by the 180 s timeout (the application may not power off QEMU)
+-- output (first 60 lines) --
+
+OpenSBI v1.6
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+Platform Name               : riscv-virtio,qemu
+Platform Features           : medeleg
+Platform HART Count         : 2
+Platform IPI Device         : aclint-mswi
+Platform Timer Device       : aclint-mtimer @ 10000000Hz
+Platform Console Device     : uart8250
+Platform HSM Device         : ---
+Platform PMU Device         : ---
+Platform Reboot Device      : syscon-reboot
+Platform Shutdown Device    : syscon-poweroff
+Platform Suspend Device     : ---
+Platform CPPC Device        : ---
+Firmware Base               : 0x80000000
+Firmware Size               : 329 KB
+Firmware RW Offset          : 0x40000
+Firmware RW Size            : 73 KB
+Firmware Heap Offset        : 0x48000
+Firmware Heap Size          : 41 KB (total), 2 KB (reserved), 12 KB (used), 26 KB (free)
+Firmware Scratch Size       : 4096 B (total), 1400 B (used), 2696 B (free)
+Runtime SBI Version         : 3.0
+Standard SBI Extensions     : time,rfnc,ipi,base,hsm,srst,pmu,dbcn,fwft,legacy,dbtr,sse
+Experimental SBI Extensions : none
+
+Domain0 Name                : root
+Domain0 Boot HART           : 0
+Domain0 HARTs               : 0*,1*
+Domain0 Region00            : 0x0000000000100000-0x0000000000100fff M: (I,R,W) S/U: (R,W)
+Domain0 Region01            : 0x0000000010000000-0x0000000010000fff M: (I,R,W) S/U: (R,W)
+Domain0 Region02            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain0 Region03            : 0x0000000080040000-0x000000008005ffff M: (R,W) S/U: ()
+Domain0 Region04            : 0x0000000080000000-0x000000008003ffff M: (R,X) S/U: ()
+Domain0 Region05            : 0x000000000c400000-0x000000000c5fffff M: (I,R,W) S/U: (R,W)
+Domain0 Region06            : 0x000000000c000000-0x000000000c3fffff M: (I,R,W) S/U: (R,W)
+Domain0 Region07            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (R,W,X)
+Domain0 Next Address        : 0x0000000080200000
+Domain0 Next Arg1           : 0x0000000082200000
+Domain0 Next Mode           : S-mode
+Domain0 SysReset            : yes
+Domain0 SysSuspend          : yes
+
+Boot HART ID                : 0
+Boot HART Domain            : root
+Boot HART Priv Version      : v1.12
+Boot HART Base ISA          : rv64imafdch
+Boot HART ISA Extensions    : sstc,zicntr,zihpm,zkr,zicboz,zicbom,sdtrig,svadu
+Boot HART PMP Count         : 16
+Boot HART PMP Granularity   : 2 bits
+Boot HART PMP Address Bits  : 54
+Boot HART MHPM Info         : 16 (0x0007fff8)
+
+===== 5. Verdict =====
+U-Boot (S-mode, untrusted domain): control n/a            OP-TEE n/a            OpenSBI n/a
+Linux user space via devmem      : control n/a            OP-TEE n/a            OpenSBI n/a
+INCONCLUSIVE - see the RESULT lines and transcripts
+
+===== 9. Summary =====
+Mode            : full
+Failed checks   : 4
+Verdict         : INCONCLUSIVE - see the RESULT lines and transcripts
+Next            : upload logs/gate05/gate05a_isolation_20261107-120136.log and its .sha256 manifest

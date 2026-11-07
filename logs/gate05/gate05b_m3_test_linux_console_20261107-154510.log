@@ -1,0 +1,117 @@
+[    0.390272] loop: module loaded
+[    0.390927] virtio_blk virtio0: 1/0/0 default/read/poll queues
+[    0.394809] virtio_blk virtio0: [vda] 532481 512-byte logical blocks (273 MB/260 MiB)
+[    0.409758]  vda: vda1
+[    0.419668] e1000e: Intel(R) PRO/1000 Network Driver
+[    0.419838] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    0.421504] usbcore: registered new interface driver uas
+[    0.421829] usbcore: registered new interface driver usb-storage
+[    0.422786] mousedev: PS/2 mouse device common for all mice
+[    0.425790] goldfish_rtc 101000.rtc: registered as rtc0
+[    0.426269] goldfish_rtc 101000.rtc: setting system clock to 2026-11-07T06:45:10 UTC (1794033910)
+[    0.429115] sdhci: Secure Digital Host Controller Interface driver
+[    0.429251] sdhci: Copyright(c) Pierre Ossman
+[    0.429405] Synopsys Designware Multimedia Card Interface Driver
+[    0.429680] sdhci-pltfm: SDHCI platform and OF driver helper
+[    0.430932] usbcore: registered new interface driver usbhid
+[    0.431088] usbhid: USB HID core driver
+[    0.431453] riscv-pmu-sbi: SBI PMU extension is available
+[    0.432006] riscv-pmu-sbi: 16 firmware and 18 hardware counters
+[    0.432132] riscv-pmu-sbi: Perf sampling/filtering is not supported as sscof extension is not available
+[    0.447586] NET: Registered PF_INET6 protocol family
+[    0.456015] Segment Routing with IPv6
+[    0.456313] In-situ OAM (IOAM) with IPv6
+[    0.456823] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    0.458826] NET: Registered PF_PACKET protocol family
+[    0.460272] 9pnet: Installing 9P2000 support
+[    0.460715] Key type dns_resolver registered
+[    0.574172] clk: Disabling unused clocks
+[    0.575068] PM: genpd: Disabling unused power domains
+[    0.575657] ALSA device list:
+[    0.575874]   No soundcards found.
+[    0.588524] EXT4-fs (vda1): mounting ext2 file system using the ext4 subsystem
+[    0.598928] EXT4-fs (vda1): mounted filesystem 447ae543-e994-441a-b72e-6a85dede3d16 r/w without journal. Quota mode: disabled.
+[    0.600430] VFS: Mounted root (ext2 filesystem) on device 254:1.
+[    0.602459] devtmpfs: mounted
+[    0.651448] Freeing unused kernel image (initmem) memory: 2388K
+[    0.652340] Run /sbin/init as init process
+[    0.766285] EXT4-fs (vda1): re-mounted 447ae543-e994-441a-b72e-6a85dede3d16.
+Saving 256 bits of creditable seed for next boot
+Starting syslogd: OK
+Starting klogd: OK
+Running sysctl: OK
+Starting tee-supplicant: Using device /dev/teepriv0.
+ERR [90] TSUP:main:908: make_daemon(): -1
+FAIL
+Starting network: udhcpc: started, v1.37.0
+udhcpc: broadcasting discover
+udhcpc: broadcasting select for <IPv4>, server <IPv4>
+udhcpc: lease of <IPv4> obtained from <IPv4>, lease time 86400
+deleting routers
+adding dns <IPv4>
+OK
+Starting crond: OK
+
+Welcome to Buildroot
+buildroot login: root
+# uname -a; nproc; echo __G05B_RC1=$?__
+Linux buildroot 6.16.0-rc2 #1 SMP Sat Nov  7 15:25:51 <TZ> 2026 riscv64 GNU/Linux
+2
+__G05B_RC1=0__
+# dmesg | grep -iE 'aplic|imsic|aia|irqchip|riscv-intc'; echo __G05B_RC2=$?__
+[    0.000000] riscv-intc: 64 local interrupts mapped
+[    0.263697] riscv-aplic d000000.interrupt-controller: invalid cpuid for IDC2
+[    0.265114] riscv-aplic d000000.interrupt-controller: 96 interrupts directly connected to 4 CPUs
+__G05B_RC2=0__
+# cat /proc/interrupts; echo __G05B_RC3=$?__
+           CPU0       CPU1       
+ 10:        310        308 RISC-V INTC   5 Edge      riscv-timer
+ 12:         10          0 APLIC-DIRECT  33 Level     virtio2
+ 14:        436          0 APLIC-DIRECT   7 Level     virtio1
+ 15:        266          0 APLIC-DIRECT   8 Level     virtio0
+ 16:          0          0 APLIC-DIRECT  11 Level     101000.rtc
+IPI0:        35         64  Rescheduling interrupts
+IPI1:       132        151  Function call interrupts
+IPI2:         0          0  CPU stop interrupts
+IPI3:         0          0  CPU stop (for crash dump) interrupts
+IPI4:         0          0  IRQ work interrupts
+IPI5:         0          0  Timer broadcast interrupts
+IPI6:         0          0  CPU backtrace interrupts
+IPI7:         0          0  KGDB roundup interrupts
+__G05B_RC3=0__
+# dd if=/dev/vda of=/dev/null bs=1M count=32 skip=64 2>&1 | tail -n 1; echo __G0
+5B_RC4=$?__
+32+0 records out
+__G05B_RC4=0__
+# cat /proc/interrupts; echo __G05B_RC5=$?__
+           CPU0       CPU1       
+ 10:        332        416 RISC-V INTC   5 Edge      riscv-timer
+ 12:         20          0 APLIC-DIRECT  33 Level     virtio2
+ 14:        759          0 APLIC-DIRECT   7 Level     virtio1
+ 15:        332          0 APLIC-DIRECT   8 Level     virtio0
+ 16:          0          0 APLIC-DIRECT  11 Level     101000.rtc
+IPI0:        37         64  Rescheduling interrupts
+IPI1:       134        164  Function call interrupts
+IPI2:         0          0  CPU stop interrupts
+IPI3:         0          0  CPU stop (for crash dump) interrupts
+IPI4:         0          0  IRQ work interrupts
+IPI5:         0          0  Timer broadcast interrupts
+IPI6:         0          0  CPU backtrace interrupts
+IPI7:         0          0  KGDB roundup interrupts
+__G05B_RC5=0__
+# poweroff
+# Stopping crond: stopped /usr/sbin/crond (pid 128)
+OK
+Stopping network: OK
+Stopping tee-supplicant: FAIL
+Stopping klogd: OK
+Stopping syslogd: stopped /sbin/syslogd (pid 76)
+OK
+Seeding 256 bits and crediting
+Saving 256 bits of creditable seed for next boot
+umount: devtmpfs busy - remounted read-only
+[    4.982779] EXT4-fs (vda1): re-mounted 447ae543-e994-441a-b72e-6a85dede3d16 ro.
+The system is going down NOW!
+Sent SIGTERM to all processes
+Sent SIGKILL to all processes
+Requesting system poweroff

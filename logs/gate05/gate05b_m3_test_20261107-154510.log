@@ -1,0 +1,166 @@
+
+===== 0. Meta =====
+Gate        : 05b-2 (m3 interrupt test with start-qemu-bm-kernel.sh)
+Mode        : full
+Timestamp   : 20261107-154510
+Script      : scripts/gate05b_test.sh  sha256=4ad18fe863b96195b4730ec94ebe736d176498b317016ae1413e16172f51aa8d
+
+===== 1. Safety pre-checks =====
+[OK]   unprivileged user (uid 1000)
+[OK]   Buildroot QEMU: QEMU emulator version 10.1.93
+[OK]   scripts/gate05b_console.py  sha256=6f6e8bbc2aefc7c045ce0f782bb0018d6eb71c1f8d61a1d643a5e6e147c3abc8
+[OK]   ports 64321 / 64322 / 2200 are free
+-- shape of start-qemu-bm-kernel.sh (must match what the test relies on) --
+[OK]   puts the Buildroot host/bin first in PATH
+[OK]   no option parsing (QEMU arguments are passed directly)
+[OK]   Linux console: virtio console on TCP 64321 (waits for a client)
+[OK]   QEMU machine with APLIC (-M virt,aia=aplic)
+[OK]   uses sdcard.img (protected with -snapshot)
+[OK]   hostfwd on all interfaces found 2 time(s) - will be restricted
+[OK]   m3: dumpdtb + overlay + second QEMU run
+sdcard.img sha256 before: 940e742bbc41981f320a4152e343cedd7b2660cea01cddd8231deda2f3a58c37
+
+===== 2. Loopback-only launcher (upstream start-qemu-bm-kernel.sh is not modified) =====
+[OK]   start-qemu-bm-kernel.loopback.sh generated: only 2 hostfwd address(es) differ
+
+===== 3. Run (QEMU with -snapshot, process group managed) =====
+[INFO] launcher started, process group 2355341
+[OK]   port 64321: 127.0.0.1:64321 
+[OK]   port 64322: not listening
+[OK]   port 2200: not listening
+[OK]   QEMU pid 2355354: -snapshot active
+[INFO] Linux console driver started (pid 2355391)
+[OK]   Linux logged in; first Linux checks done
+-- OpenSBI console: key tests --
+RESULT m3_bmapp1_ready PASS | bm-app1 (domain1, hart2) ready for keys
+RESULT m3_key_a_handled_by_bmapp2 PASS | bm-app2 handled 'a'
+RESULT m3_switch_to_domain2 PASS | hart2 switched domain1 -> domain2
+RESULT m3_return_to_domain1 PASS | hart2 returned domain2 -> domain1
+RESULT m3_key_b_handled_by_bmapp2 PASS | second key handled
+RESULT m3_switch_again PASS | switched to domain2 again
+RESULT m3_return_again PASS | returned to domain1 again
+[15:45:10] connected to the Linux console (hvc0)
+[15:45:12] logged in as root
+[15:45:12] run   uname -a; nproc
+[15:45:12] done  rc=0
+[15:45:12] run   dmesg | grep -iE 'aplic|imsic|aia|irqchip|riscv-intc'
+[15:45:12] done  rc=0
+RESULT linux_aplic_registered PASS | [    0.263697] riscv-aplic d000000.interrupt-controller: invalid cpuid for IDC2
+[15:45:12] run   cat /proc/interrupts
+[15:45:12] done  rc=0
+RESULT linux_aplic_direct_lines PASS | 12:virtio2, 14:virtio1, 15:virtio0, 16:101000.rtc
+[15:45:12] Linux side ready - waiting while keys are tested on the OpenSBI console
+[15:45:15] run   dd if=/dev/vda of=/dev/null bs=1M count=32 skip=64 2>&1 | tail -n 1
+[15:45:15] done  rc=0
+[15:45:15] run   cat /proc/interrupts
+[15:45:15] done  rc=0
+RESULT linux_aplic_counters PASS | APLIC-DIRECT total 712 -> 1111
+[15:45:15] poweroff
+[rc=0] Linux console driver
+
+===== 4. Evidence (OpenSBI console) =====
+[VIRQ] Init per-domain VIRQ courier state for root
+[VIRQ] number of harts: 4
+APLIC: matched node compatible riscv,aplic
+APLIC: parsed addr=0xd000000 targets_mmode=0
+APLIC: irqchip aplic cold init done
+APLIC: matched node compatible riscv,aplic
+APLIC: parsed addr=0xc000000 targets_mmode=1
+APLIC: irqchip aplic cold init done
+[VIRQ] Init per-domain VIRQ courier state for domain2
+[VIRQ] number of harts: 4
+[VIRQ] Init per-domain VIRQ courier state for domain1
+[VIRQ] number of harts: 4
+[VIRQ] set mapping: (hwirq 10, chip_uid 8176) -> VIRQ 0
+[VIRQ] add route rule: hwirq 10 route to dom (domain2)
+[VIRQ] set mapping: (hwirq 20, chip_uid 8176) -> VIRQ 1
+[VIRQ] add route rule: hwirq 20 route to dom (domain2)
+[VIRQ] set mapping: (hwirq 21, chip_uid 8176) -> VIRQ 2
+[VIRQ] add route rule: hwirq 21 route to dom (domain2)
+[ECALL VIRQ] register VIRQ ecall extensions, ret=0
+Standard SBI Extensions     : time,rfnc,ipi,base,hsm,srst,pmu,dbcn,fwft,legacy,dbtr,sse,virq
+Domain0 Name                : root
+Domain1 Name                : domain2
+Domain2 Name                : domain1
+Boot HART ID                : 1
+BM-APP (domain 1, hart 2): Welcome to OpenSBI bare-metal app!
+BM-APP (domain 1, hart 2): SBI Spec Version: 3.0
+BM-APP (domain 1, hart 2): SBI Implementation: OpenSBI
+BM-APP (domain 1, hart 2): OpenSBI Version: 1.8
+BM-APP (domain 1, hart 2): Init timer successfully 10000000 ticks/s
+BM-APP (domain 1, hart 2): SEIP enabled, stvec=88000b08
+BM-APP (domain 1, hart 2): Enable UART RX interrupt
+BM-APP (domain 1, hart 2): Setup done. Type keys now to trigger UART interrupts.
+[IRQCHIP] Calling handler for hwirq 10
+[IRQCHIP] Enter hwirq 10 raw handler
+[IRQCHIP] Calling hwirq 10 raw handler callback
+[VIRQ] virq courier hart2 curr=domain1 target=domain2 hwirq=10
+[VIRQ] found existing mapping: (hwirq 10, chip_uid 8176) -> virq 0
+[VIRQ] route hwirq 10, chip_uid 8176 -> dom (domain2), channel 4, VIRQ 0
+[VIRQ] Get queue for (domain,hartidx): (domain2,2)
+[VIRQ] Push VIRQ 0 to queue
+[VIRQ] S-mode pending notify
+[VIRQ] virq courier switching hart2 domain1 -> domain2
+[domain] switch hart2 domain1 -> domain2 (mideleg=0x1666)
+[IRQCHIP] Set mip.SEIP (mip before=0x20, after=0x220)
+[domain] first-entry domain2 on hart2 (mideleg=0x1666)
+BM-APP (domain 2, hart 2): Welcome to OpenSBI bare-metal app!
+BM-APP (domain 2, hart 2): SBI Spec Version: 3.0
+BM-APP (domain 2, hart 2): SBI Implementation: OpenSBI
+BM-APP (domain 2, hart 2): OpenSBI Version: 1.8
+BM-APP (domain 2, hart 2): Init timer successfully 10000000 ticks/s
+BM-APP (domain 2, hart 2): [trap] enter: scause=8000000000000009 sepc=890000f4 stvec=89000b08 a0=2 a1=2
+BM-APP (domain 2, hart 2): [VIRQ] SEIP handler trapped
+BM-APP (domain 2, hart 2): [VIRQ] Pop IRQ via ecall
+[ECALL VIRQ] VIRQ ecall handler, funcid: 0
+[VIRQ] Get queue for (domain,hartidx): (domain2,2)
+[VIRQ] Pop VIRQ 0 from queue
+BM-APP (domain 2, hart 2): [VIRQ] Pop IRQ:0
+BM-APP (domain 2, hart 2): [VIRQ] Handle IRQ:0, hwirq:10
+BM-APP (domain 2, hart 2): [UART] Got 'a'(0x61)
+BM-APP (domain 2, hart 2): [VIRQ] Complete IRQ via ecall
+[ECALL VIRQ] VIRQ ecall handler, funcid: 1
+[VIRQ] Get queue for (domain,hartidx): (domain2,2)
+[VIRQ] Complete VIRQ 0 from queue
+[IRQCHIP] Calling EOI of hwirq 10
+[VIRQ] return_to_prev after VIRQ queue drained on hart2
+[domain] return hart2 domain2 -> domain1 (mideleg=0x1666)
+[domain] switch hart2 domain2 -> domain1 (mideleg=0x1666)
+[IRQCHIP] Calling handler for hwirq 10
+[IRQCHIP] Enter hwirq 10 raw handler
+[IRQCHIP] Calling hwirq 10 raw handler callback
+[VIRQ] virq courier hart2 curr=domain1 target=domain2 hwirq=10
+[VIRQ] found existing mapping: (hwirq 10, chip_uid 8176) -> virq 0
+[VIRQ] route hwirq 10, chip_uid 8176 -> dom (domain2), channel 4, VIRQ 0
+[VIRQ] Get queue for (domain,hartidx): (domain2,2)
+[VIRQ] Push VIRQ 0 to queue
+[VIRQ] S-mode pending notify
+[VIRQ] virq courier switching hart2 domain1 -> domain2
+[domain] switch hart2 domain1 -> domain2 (mideleg=0x1666)
+[IRQCHIP] Set mip.SEIP (mip before=0x20, after=0x220)
+[ECALL VIRQ] VIRQ ecall handler, funcid: 1
+[VIRQ] Get queue for (domain,hartidx): (domain2,2)
+[VIRQ] Complete VIRQ 0 from queue
+BM-APP (domain 2, hart 2): [VIRQ] Pop IRQ via ecall
+[ECALL VIRQ] VIRQ ecall handler, funcid: 0
+[VIRQ] Get queue for (domain,hartidx): (domain2,2)
+[VIRQ] Pop VIRQ 0 from queue
+BM-APP (domain 2, hart 2): [VIRQ] Pop IRQ:0
+BM-APP (domain 2, hart 2): [VIRQ] Handle IRQ:0, hwirq:10
+BM-APP (domain 2, hart 2): [UART] Got 'b'(0x62)
+BM-APP (domain 2, hart 2): [VIRQ] Complete IRQ via ecall
+[ECALL VIRQ] VIRQ ecall handler, funcid: 1
+[VIRQ] Get queue for (domain,hartidx): (domain2,2)
+[VIRQ] Complete VIRQ 0 from queue
+[IRQCHIP] Calling EOI of hwirq 10
+[VIRQ] return_to_prev after VIRQ queue drained on hart2
+[domain] return hart2 domain2 -> domain1 (mideleg=0x1666)
+[domain] switch hart2 domain2 -> domain1 (mideleg=0x1666)
+[OK]   sdcard.img unchanged (940e742bbc41981f)
+
+===== 9. Summary =====
+Target          : m3
+Mode            : full
+Failed checks   : 0
+Verdict         : ALL m3 INTERRUPT CHECKS PASSED
+Next            : upload logs/gate05/gate05b_m3_test_20261107-154510.log and its .sha256 manifest

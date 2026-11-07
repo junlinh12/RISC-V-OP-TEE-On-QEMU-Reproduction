@@ -1,0 +1,312 @@
+
+===== 0. Meta =====
+Gate        : 05c (v9: boot, optee_examples, full xtest - same driver as G03)
+Mode        : full
+Timestamp   : 20261107-175945
+ProjectRoot : <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction
+Script      : scripts/gate05c_xtest.sh  sha256=61542b2c39fe6e285dccc217216997e84e6eee74883ed54d49ca7bb47bcc6821
+Raw log     : logs/gate05/raw/gate05c_v9_xtest_20261107-175945.raw.log  (local only, not published)
+
+===== 1. Safety pre-checks =====
+[OK]   running as an unprivileged user (uid 1000)
+[OK]   Buildroot QEMU: QEMU emulator version 10.0.0
+[OK]   start-qemu.sh puts output/host/bin first in PATH
+[OK]   output/images/u-boot-spl
+[OK]   output/images/u-boot.itb
+[OK]   output/images/qemu_rv64_virt_domain.dtb
+[OK]   output/images/sdcard.img
+[OK]   output/images/start-qemu.sh
+[OK]   output/images/tee.bin
+[OK]   ports 64320 / 64321 / 2200 are free
+[OK]   Python 3.12.3
+[OK]   scripts/gate03_console.py  sha256=df46eb9f55aa706f8c77dfbec077af19673192c50229cecbe8a8367b14513e9a
+-- guest root filesystem (output/target) --
+[INFO] guest root account has no password (Buildroot default)
+[INFO] no SSH server in the guest (dropbear / sshd not installed); port 2200 leads nowhere
+[OK]   guest has /usr/bin/xtest
+[OK]   guest has /usr/sbin/tee-supplicant
+guest optee_example_* : optee_example_acipher optee_example_aes optee_example_ecdh optee_example_ecdsa optee_example_hello_world optee_example_hotp optee_example_plugins optee_example_random optee_example_secure_storage optee_example_sha optee_example_sign_verify 
+guest TEE init scripts: S30tee-supplicant 
+[OK]   start-qemu.sh uses sdcard.img (protected with -snapshot)
+[OK]   start-qemu.sh parses options: QEMU arguments go after '--'
+sdcard.img sha256 before: 390a3ed90db053866ab721f4148052d021c41fa19c8c736215b656b5054f033f
+
+===== 2. Loopback-only launcher (upstream start-qemu.sh is not modified) =====
+[OK]   launcher generated: output/images/start-qemu.loopback.sh (only the QEMU line differs: hostfwd)
+-- diff start-qemu.sh -> start-qemu.loopback.sh --
+< ... hostfwd=tcp::2200-:22 ...
+> ... hostfwd=tcp:127.0.0.1:2200-:22 ...
+-- QEMU command line used (from the launcher) --
+qemu-system-riscv64 -M virt -cpu rv64,zkr=on -dtb qemu_rv64_virt_domain.dtb -m 4096 -smp 2 -semihosting-config enable=on,target=native -serial tcp:127.0.0.1:64320,server -bios u-boot-spl -device loader,file=u-boot.itb,addr=0x80200000 -device virtio-blk-device,drive=hd0 -drive format=raw,file=sdcard.img,id=hd0,if=none -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp:127.0.0.1:2200-:22 -nographic  ${EXTRA_ARGS} "$@"
+
+===== 3. Boot, optee_examples, xtest =====
+QEMU stdio (OP-TEE semihosting console) : logs/gate05/raw/gate05c_v9_qemu_stdio_20261107-175945.raw.log
+Guest UART (OpenSBI / U-Boot / Linux)   : logs/gate05/raw/gate05c_v9_console_20261107-175945.raw.log
+Timeouts: boot 900 s, command 300 s, xtest 10800 s
+[INFO] QEMU started (pid 3225462); waiting for 127.0.0.1:64320
+-- listening sockets of the guest (must be 127.0.0.1 only) --
+[OK]   port 64320 bound to 127.0.0.1:64320 
+[OK]   port 2200 bound to 127.0.0.1:2200 
+[OK]   QEMU pid 3225462: -snapshot active
+
+-- console driver --
+[17:59:46] connected to 127.0.0.1:64320 - QEMU starts the guest now
+[17:59:50] login prompt reached
+[17:59:50] logged in as root
+[17:59:50] run   uname: uname -a
+[17:59:50] done  uname: rc=0 (0 s)
+STEP uname rc=0
+[17:59:50] run   kernel_cmdline: cat /proc/cmdline
+[17:59:50] done  kernel_cmdline: rc=0 (0 s)
+STEP kernel_cmdline rc=0
+[17:59:50] run   tee_devices: ls -l /dev/tee*
+[17:59:50] done  tee_devices: rc=0 (0 s)
+STEP tee_devices rc=0
+[17:59:50] run   tee_supplicant: pidof tee-supplicant
+[17:59:50] done  tee_supplicant: rc=0 (0 s)
+STEP tee_supplicant rc=0
+[17:59:50] run   optee_driver: dmesg | grep -i optee
+[17:59:50] done  optee_driver: rc=0 (0 s)
+STEP optee_driver rc=0
+[17:59:50] run   example_hello_world: optee_example_hello_world
+[17:59:51] done  example_hello_world: rc=0 (0 s)
+STEP example_hello_world rc=0
+[17:59:51] run   example_random: optee_example_random
+[17:59:51] done  example_random: rc=0 (0 s)
+STEP example_random rc=0
+[17:59:51] run   example_aes: optee_example_aes
+[17:59:51] done  example_aes: rc=0 (0 s)
+STEP example_aes rc=0
+[17:59:51] run   example_hotp: optee_example_hotp
+[17:59:51] done  example_hotp: rc=0 (0 s)
+STEP example_hotp rc=0
+[17:59:51] run   example_secure_storage: optee_example_secure_storage
+[17:59:51] done  example_secure_storage: rc=0 (0 s)
+STEP example_secure_storage rc=0
+[17:59:51] run   xtest: xtest
+[17:59:51] xtest regression_1001 Core self tests
+[17:59:51] xtest regression_1002 PTA parameters
+[17:59:51] xtest regression_1003 Core internal read/write mutex
+[17:59:51] xtest regression_1004 Test User Crypt TA
+[17:59:51] xtest regression_1005 Many sessions
+[17:59:52] xtest regression_1006 Test Basic OS features
+[17:59:53] xtest regression_1007 Test Panic
+[17:59:53] xtest regression_1008 TEE internal client API
+[17:59:57] xtest regression_1009 TEE Wait
+[18:00:02] xtest regression_1010 Invalid memory access
+[18:00:04] xtest regression_1011 Test TA-to-TA features with User Crypt TA
+[18:00:05] xtest regression_1012 Test Single Instance Multi Session features with SIMS TA
+[18:00:06] xtest regression_1013 Test concurrency with concurrent TA
+[18:00:26] xtest regression_1015 FS hash-tree corner cases
+[18:00:26] xtest regression_1016 Test TA to TA transfers (in/out/inout memrefs on the stack)
+[18:00:26] xtest regression_1017 Test coalescing memrefs
+[18:00:27] xtest regression_1018 Test memref out of bounds
+[18:00:27] xtest regression_1019 Test dynamically linked TA
+[18:00:27] xtest regression_1020 Test lockdep algorithm
+[18:00:27] xtest regression_1021 Test panic context release
+[18:00:28] xtest regression_1022 Test dlopen()/dlsym()/dlclose() API
+[18:00:28] xtest regression_1023 Test ELF initialization (.init_array)
+[18:00:28] xtest regression_1025 Test memref NULL and/or 0 bytes size
+[18:00:28] xtest regression_1026 Session: public login
+[18:00:29] xtest regression_1027 Session: user login for current user
+[18:00:29] xtest regression_1028 Session: group login for current user's effective group
+[18:00:29] xtest regression_1029 Test __thread attribute
+[18:00:29] xtest regression_1030 Test dl_iterate_phdr()
+[18:00:29] xtest regression_1031 Test C++ features
+[18:00:29] xtest regression_1032 Register read-only shared memory
+[18:00:29] xtest regression_1033 Test the supplicant plugin framework
+[18:00:29] xtest regression_1034 Test loading a large TA
+[18:00:29] xtest regression_1036 Test PAuth (Pointer Authentication)
+[18:00:30] xtest regression_1037 Remote attestation
+[18:00:30] xtest regression_1038 Test MTE (Memory Tag Extension)
+[18:00:30] xtest regression_1039 Test subkey verification
+[18:00:30] xtest regression_1040 Test panic in concurrent open/invoke/close session
+[18:00:36] xtest regression_1041 Test fTPM sanity
+[18:00:36] xtest regression_2001 Trivial TCP iSocket API tests
+[18:00:37] xtest regression_2002 Concurrent stressing TCP iSocket API tests
+[18:00:38] xtest regression_2003 Timeout TCP iSocket API tests
+[18:00:38] xtest regression_2004 UDP iSocket API tests
+[18:00:39] xtest regression_4001 Test TEE Internal API hash operations
+[18:00:39] xtest regression_4002 Test TEE Internal API MAC operations
+[18:00:41] xtest regression_4003 Test TEE Internal API cipher operations
+[18:00:42] xtest regression_4004 Test TEE Internal API get random
+[18:00:42] xtest regression_4005 Test TEE Internal API Authenticated Encryption operations
+[18:00:44] xtest regression_4006_dsa Test TEE Internal API DSA Cipher/Authentication operations
+[18:00:45] xtest regression_4006_ecdsa Test TEE Internal API ECDSA Cipher/Authentication operations
+[18:00:46] xtest regression_4006_rsa Test TEE Internal API RSA Cipher/Authentication operations
+[18:04:52] ... still running (5 min elapsed)
+[18:05:04] xtest regression_4006_sm2 Test TEE Internal API SM2 Cipher/Authentication operations
+[18:05:08] xtest regression_4007_dh Test TEE Internal API Generate DH key
+[18:05:08] xtest regression_4007_dsa Test TEE Internal API Generate DSA key
+[18:05:08] xtest regression_4007_ecc Test TEE Internal API Generate ECC key
+[18:05:09] xtest regression_4007_ed25519 Test TEE Internal API Generate ed25519 key
+[18:05:09] xtest regression_4007_rsa Test TEE Internal API Generate RSA key
+[18:05:09] xtest regression_4007_symmetric Test TEE Internal API Generate Symmetric key
+[18:05:11] xtest regression_4007_x25519 Test TEE Internal API Generate X25519 key
+[18:05:11] xtest regression_4008 Test TEE Internal API Derive key
+[18:05:13] xtest regression_4009 Test TEE Internal API Derive key ECDH
+[18:05:17] xtest regression_4010 Test TEE Internal API create transient object (negative)
+[18:05:17] xtest regression_4011 Test TEE Internal API Bleichenbacher attack (negative)
+[18:08:53] xtest regression_4012 Test seeding RNG entropy
+[18:08:53] xtest regression_4013 Test generation of device unique TA keys
+[18:08:54] xtest regression_4014 Test SM2 KEP (key derivation)
+[18:08:55] xtest regression_4015 Test TEE Internal API Derive key X25519
+[18:08:55] xtest regression_4016 Test TEE Internal API ED25519 sign/verify
+[18:08:55] xtest regression_4017 Test TEE Internal API Cipher block buffering
+[18:08:57] xtest regression_4018 TEE_SetOperationKey() panic on an initialized operation
+[18:08:57] xtest regression_4101 Test TEE Internal API Arithmetical API - Bigint init
+[18:08:57] xtest regression_4102 Test TEE Internal API Arithmetical API - Octet string
+[18:08:57] xtest regression_4103 Test TEE Internal API Arithmetical API - S32
+[18:08:57] xtest regression_4104 Test TEE Internal API Arithmetical API - Compare
+[18:08:57] xtest regression_4105 Test TEE Internal API Arithmetical API - Add, Sub
+[18:08:58] xtest regression_4106 Test TEE Internal API Arithmetical API - Neg
+[18:08:58] xtest regression_4107 Test TEE Internal API Arithmetical API - Mul
+[18:08:58] xtest regression_4108 Test TEE Internal API Arithmetical API - Div
+[18:08:58] xtest regression_4109 Test TEE Internal API Arithmetical API - Mod
+[18:08:58] xtest regression_4110 Test TEE Internal API Arithmetical API - Mod arith
+[18:08:59] xtest regression_4111 Test TEE Internal API Arithmetical API - Invmod
+[18:08:59] xtest regression_4112 Test TEE Internal API Arithmetical API - Is prime
+[18:09:05] xtest regression_4113 Test TEE Internal API Arithmetical API - shift right
+[18:09:05] xtest regression_4114 Test TEE Internal API Arithmetical API - GCD
+[18:09:05] xtest regression_4115 Test TEE Internal API Arithmetical API - Abs
+[18:09:05] xtest regression_4116 Test TEE Internal API Arithmetical API - Get/Set Bit
+[18:09:05] xtest regression_4117 Test TEE Internal API Arithmetical API - ExpMod
+[18:09:05] xtest regression_5006 Tests for Global platform TEEC
+[18:09:05] xtest regression_6001 Test TEE_CreatePersistentObject
+[18:09:06] xtest regression_6002 Test TEE_OpenPersistentObject
+[18:09:07] xtest regression_6003 Test TEE_ReadObjectData
+[18:09:07] xtest regression_6004 Test TEE_WriteObjectData
+[18:09:08] xtest regression_6005 Test TEE_SeekObjectData
+[18:09:08] xtest regression_6006 Test TEE_CloseAndDeletePersistentObject
+[18:09:08] xtest regression_6007 Test TEE_TruncateObjectData
+[18:09:09] xtest regression_6008 Test TEE_RenamePersistentObject
+[18:09:10] xtest regression_6009 Test TEE Internal API Persistent Object Enumeration Functions
+[18:09:11] xtest regression_6010 Test Storage
+[18:09:12] xtest regression_6012 Test TEE GP TTA DS init objects
+[18:09:13] xtest regression_6013 Key usage in Persistent objects
+[18:09:13] xtest regression_6014 Loop on Persistent objects
+[18:09:16] xtest regression_6015 Storage isolation
+[18:09:16] xtest regression_6016 Storage concurrency
+[18:09:25] xtest regression_6017 Test Persistent objects info
+[18:09:25] xtest regression_6018 Large object
+[18:09:28] xtest regression_6019 Storage independence
+[18:09:29] xtest regression_6020 Object IDs in SHM (negative)
+[18:09:29] xtest regression_6021 Modify and check persistent object usage
+[18:09:30] xtest regression_8001 Test TEE Internal API key derivation extensions
+[18:09:31] xtest regression_8002 Secure Storage Key Manager API Self Test
+[18:09:31] xtest regression_8101 TA mbedTLS self tests
+[18:09:31] xtest regression_8102 TA mbedTLS test cert chain
+[18:09:31] xtest regression_8103 TA mbedTLS process certificate request
+[18:09:31] done  xtest: rc=0 (580 s)
+STEP xtest rc=0
+SUMMARY xtest_rc=0
+SUMMARY xtest_subtests=35526 xtest_subtests_failed=0
+SUMMARY xtest_cases=112 xtest_cases_failed=0
+SUMMARY xtest_skipped=0
+[18:09:31] poweroff
+[18:09:34] guest powered off
+SUMMARY failed_checks=0
+$ python3 scripts/gate03_console.py ...
+[rc=0]
+[OK]   console driver: all checks passed
+[OK]   QEMU exited by itself (exit status 0)
+[OK]   sdcard.img unchanged (390a3ed90db05386)
+
+===== 4. Boot evidence =====
+-- guest UART: boot chain --
+U-Boot SPL 2025.01 (Nov 07 2026 - 16:41:11 <TZ>)
+OpenSBI v1.8
+Platform Name               : riscv-virtio,qemu
+Firmware Base               : 0x80100000
+Domain0 Name                : root
+Domain1 Name                : trusted-domain
+Domain2 Name                : untrusted-domain
+U-Boot 2025.01 (Nov 07 2026 - 16:41:11 <TZ>)
+[    0.000000] Linux version 6.19.0-rc2 (<USER>@<HOST>) (riscv64-linux-gcc.br_real (Buildroot 2021.11-12449-g1bef613319) 14.2.0, GNU ld (GNU Binutils) 2.42) #1 SMP Sat Nov  7 16:51:52 <TZ> 2026
+[    0.365020] optee: probing for conduit method.
+[    0.365595] optee: Probed RPMI OP-TEE channel 0 (dedicated to hart0)
+[    0.365702] optee: Probed RPMI OP-TEE channel 1 (dedicated to hart1)
+[    0.367450] optee: revision 4.8
+[    0.369407] optee: dynamic shared memory is enabled
+[    0.382398] optee: initialized driver
+buildroot login: root
+[    0.365020] optee: probing for conduit method.
+[    0.365595] optee: Probed RPMI OP-TEE channel 0 (dedicated to hart0)
+[    0.365702] optee: Probed RPMI OP-TEE channel 1 (dedicated to hart1)
+[    0.367450] optee: revision 4.8
+[    0.369407] optee: dynamic shared memory is enabled
+[    0.382398] optee: initialized driver
+-- guest UART: OpenSBI domain report --
+Domain0 Name                : root
+Domain0 Boot HART           : 0
+Domain0 HARTs               : 0,1
+Domain0 Region00            : 0x0000000080140000-0x000000008015ffff M: (F,R,W) S/U: ()
+Domain0 Region01            : 0x0000000080100000-0x000000008013ffff M: (F,R,X) S/U: ()
+Domain0 Region02            : 0x0000000000100000-0x0000000000100fff M: (I,R,W) S/U: (R,W)
+Domain0 Region03            : 0x0000000010000000-0x0000000010000fff M: (I,R,W) S/U: (R,W)
+Domain0 Region04            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain0 Region05            : 0x000000000c400000-0x000000000c5fffff M: (I,R,W) S/U: (R,W)
+Domain0 Region06            : 0x000000000c000000-0x000000000c3fffff M: (I,R,W) S/U: (R,W)
+Domain0 Region07            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (R,W,X)
+Domain0 Next Address        : 0x0000000081200000
+Domain0 Next Arg1           : 0x0000000081299ce0
+Domain0 Next Mode           : S-mode
+Domain0 SysReset            : yes
+Domain0 SysSuspend          : yes
+Domain1 Name                : trusted-domain
+Domain1 Boot HART           : 0
+Domain1 HARTs               : 0*,1*
+Domain1 Region00            : 0x0000000080140000-0x000000008015ffff M: (F,R,W) S/U: ()
+Domain1 Region01            : 0x0000000080100000-0x000000008013ffff M: (F,R,X) S/U: ()
+Domain1 Region02            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain1 Region03            : 0x0000000000000000-0xffffffffffffffff M: (R,W,X) S/U: (R,W,X)
+Domain1 Next Address        : 0x00000000f1000000
+Domain1 Next Arg1           : 0x0000000081299ce0
+Domain1 Next Mode           : S-mode
+Domain1 SysReset            : no
+Domain1 SysSuspend          : no
+Domain2 Name                : untrusted-domain
+Domain2 Boot HART           : 0
+Domain2 HARTs               : 0,1
+Domain2 Region00            : 0x0000000080140000-0x000000008015ffff M: (F,R,W) S/U: ()
+Domain2 Region01            : 0x0000000080100000-0x000000008013ffff M: (F,R,X) S/U: ()
+Domain2 Region02            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain2 Region03            : 0x00000000f1000000-0x00000000f1ffffff M: () S/U: ()
+Domain2 Region04            : 0x0000000000000000-0xffffffffffffffff M: (R,W,X) S/U: (R,W,X)
+Domain2 Next Address        : 0x0000000081200000
+Domain2 Next Arg1           : 0x0000000081299ce0
+Domain2 Next Mode           : S-mode
+Domain2 SysReset            : no
+Domain2 SysSuspend          : no
+-- QEMU stdio: OP-TEE semihosting console (key lines) --
+qemu-system-riscv64: -serial tcp:127.0.0.1:64320,server: info: QEMU waiting for connection on: disconnected:tcp:127.0.0.1:64320,server=on
+I/TC: OP-TEE version: Unknown_4.8 (gcc version 14.2.0 (Buildroot 2021.11-12449-g1bef613319)) #1 Sat Nov  7 07:33:55 UTC 2026 riscv
+I/TC: Primary CPU0 (hart0) initializing
+I/TC: Primary CPU0 (hart0) initialized
+I/TC: Secondary CPU1 (hart1) initializing
+I/TC: Secondary CPU1 (hart1) initialized
+-- QEMU stdio: core PMP regions reported by OP-TEE (RP022 M8) --
+-- guest UART: OpenSBI and Boot HART --
+OpenSBI v1.8
+Runtime SBI Version         : 3.0
+Boot HART ID                : 0
+
+===== 5. xtest results for the comparison with M1 =====
+-- totals --
+35526 subtests of which 0 failed
+112 test cases of which 0 failed
+0 test cases were skipped
+-- regression_1039 (failed in M1: subkey signatures vs. RSA-4096 default key) --
+  regression_1039 OK
+regression_1039 OK
+-- regression_1049 (RP022 M8: core PMP data permissions) --
+(not present in this optee_test)
+-- cases reported as FAILED --
+QEMU stdio log : 347624 lines, 22131750 bytes
+Console log    : 2403 lines, 92102 bytes
+
+===== 9. Summary =====
+Mode            : full
+Failed checks   : 0
+Verdict         : BOOT, OPTEE_EXAMPLES AND XTEST PASSED
+Next            : upload logs/gate05/gate05c_v9_xtest_20261107-175945.log and its .sha256 manifest

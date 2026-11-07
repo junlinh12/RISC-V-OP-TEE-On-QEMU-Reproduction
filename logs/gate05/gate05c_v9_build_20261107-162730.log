@@ -1,0 +1,93 @@
+
+===== 0. Meta =====
+Gate        : 05c build (v9: dev-optee-mpxy-v9, own tree)
+Mode        : prepare-only
+Timestamp   : 20261107-162730
+Script      : scripts/gate05b_build.sh  sha256=44ca1e26eff88cf1bd03f72abcaed543541c06fd099077a8caf279d19ca0fed7
+
+===== 1. Pre-checks =====
+[OK]   MemAvailable 16 GiB
+[OK]   free disk 386 GiB
+[OK]   M1 reference tree present (it is not modified by this script)
+Target   : v9   branch dev-optee-mpxy-v9   pinned b5e20ca925d0784473c854fae92c3fc5931802ee
+Tree     : work/buildroot-v9
+BR2_DL_DIR: work/dl-g05
+Jobs     : make -j2, BR2_JLEVEL=2 (set G05B_JOBS to change)
+
+===== 2. Buildroot tree (pinned) =====
+[OK]   remote dev-optee-mpxy-v9 tip = pinned commit
+$ git -C '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-v9' fetch --quiet origin
+[rc=0]
+$ git checkout --quiet -B 'dev-optee-mpxy-v9' 'b5e20ca925d0784473c854fae92c3fc5931802ee'
+[rc=0]
+[OK]   HEAD b5e20ca925d0784473c854fae92c3fc5931802ee
+$ git log -1 --format='%cs %s'
+2026-06-11 defconfig: include optee_os and opensbi commits
+[rc=0]
+
+===== 3. Shared download directory (hard links to M1 tarballs, git caches excluded) =====
+[OK]   work/dl-g05 exists (21487 files) - not re-seeded
+
+===== 4. Components (read from local.mk and the defconfig, resolved to SHAs) =====
+-- local.mk lines that define the overrides (for the record) --
+(no local.mk)
+-- local.mk overrides --
+-- defconfig custom git repos --
+-- defconfig custom tarballs (must be pinned by a commit SHA in the URL) --
+[OK]   BR2_LINUX_KERNEL     tarball at commit 9007f552b318522b0b36c78b838f70d9dd604d80
+         https://gitlab.com/riseproject/riscv-optee/linux/-/archive/9007f552b318522b0b36c78b838f70d9dd604d80/linux-dev-optee-mpxy-v9.tar.gz
+[OK]   BR2_TARGET_OPTEE_OS  tarball at commit f1d355401a3213d076f0332fd5d98c1cae05993b
+         https://gitlab.com/riseproject/riscv-optee/optee_os/-/archive/f1d355401a3213d076f0332fd5d98c1cae05993b/optee_os-dev-optee-mpxy-v9.tar.gz
+[OK]   BR2_TARGET_OPENSBI   tarball at commit a1cdb6f4c7f511e3d0d41fc89495aefbd559e0b7
+         https://gitlab.com/riseproject/riscv-optee/opensbi/-/archive/a1cdb6f4c7f511e3d0d41fc89495aefbd559e0b7/opensbi-dev-optee-mpxy-v9.tar.gz
+[OK]   BR2_TARGET_UBOOT     tarball at commit 32bdb252fab83028768a269fb304b9356547ccbd
+         https://gitlab.com/riseproject/riscv-optee/u-boot/-/archive/32bdb252fab83028768a269fb304b9356547ccbd/u-boot-dev-optee-mpxy-v5.tar.gz
+-- version-related defconfig lines (for the record) --
+11:BR2_LINUX_KERNEL_CUSTOM_TARBALL=y
+12:BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="https://gitlab.com/riseproject/riscv-optee/linux/-/archive/9007f552b318522b0b36c78b838f70d9dd604d80/linux-dev-optee-mpxy-v9.tar.gz"
+22:BR2_TARGET_OPTEE_OS_CUSTOM_TARBALL=y
+23:BR2_TARGET_OPTEE_OS_CUSTOM_TARBALL_LOCATION="https://gitlab.com/riseproject/riscv-optee/optee_os/-/archive/f1d355401a3213d076f0332fd5d98c1cae05993b/optee_os-dev-optee-mpxy-v9.tar.gz"
+29:BR2_TARGET_OPENSBI_CUSTOM_TARBALL=y
+30:BR2_TARGET_OPENSBI_CUSTOM_TARBALL_LOCATION="https://gitlab.com/riseproject/riscv-optee/opensbi/-/archive/a1cdb6f4c7f511e3d0d41fc89495aefbd559e0b7/opensbi-dev-optee-mpxy-v9.tar.gz"
+34:BR2_TARGET_UBOOT_CUSTOM_TARBALL=y
+35:BR2_TARGET_UBOOT_CUSTOM_TARBALL_LOCATION="https://gitlab.com/riseproject/riscv-optee/u-boot/-/archive/32bdb252fab83028768a269fb304b9356547ccbd/u-boot-dev-optee-mpxy-v5.tar.gz"
+42:BR2_TARGET_UBOOT_FORMAT_CUSTOM_NAME="u-boot.itb"
+46:BR2_PACKAGE_HOST_QEMU=y
+47:BR2_PACKAGE_HOST_QEMU_SYSTEM_MODE=y
+pins written to logs/gate05/gate05c_v9_pins_20261107-162730.txt
+
+===== 5. Pin custom/ checkouts (local branch at the pinned SHA) =====
+
+===== 6. Configure (upstream defconfig + SHAs in .config) =====
+$ make -s qemu_riscv64_virt_optee_defconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-v9/.config
+#
+[rc=0]
+$ utils/config --file .config --set-val BR2_JLEVEL 2
+[rc=0]
+$ make -s olddefconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-v9/.config
+#
+[rc=0]
+[OK]   .config BR2_JLEVEL=2 (per-package parallel jobs)
+$ make -s --no-print-directory printvars VARS='LINUX_VERSION UBOOT_VERSION OPENSBI_VERSION OPTEE_OS_VERSION QEMU_VERSION OPTEE_TEST_VERSION'
+LINUX_VERSION=custom
+OPENSBI_VERSION=custom
+OPTEE_OS_VERSION=custom
+OPTEE_TEST_VERSION=4.9.0-rc1
+QEMU_VERSION=10.0.0
+UBOOT_VERSION=custom
+[rc=0]
+-- every override directory Buildroot will use must be one of the pinned checkouts --
+[INFO] Buildroot reports no override directories
+
+[INFO] --prepare-only: stopped before the build
+
+===== 10. Summary =====
+Target          : v9 (dev-optee-mpxy-v9 @ b5e20ca925d0)
+Mode            : prepare-only
+Failed checks   : 0
+Verdict         : PREPARED - run without --prepare-only to build
+Next            : upload logs/gate05/gate05c_v9_build_20261107-162730.log and its .sha256 manifest

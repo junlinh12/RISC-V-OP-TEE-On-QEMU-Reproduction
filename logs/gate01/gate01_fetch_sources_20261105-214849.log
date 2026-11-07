@@ -1,0 +1,473 @@
+
+===== 0. Meta =====
+Gate        : 01 (Source acquisition, branch survey, version pinning)
+Timestamp   : 20261105-214849
+ProjectRoot : <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction
+Group       : https://gitlab.com/riseproject/riscv-optee
+Baseline    : rp016_m1
+
+===== 1. Remote branches of each component repo =====
+(full lists -> gate01_remote_branches_20261105-214849.txt)
+[OK]   buildroot   34 branches   rp016_m1: d7204671a32ca2edc521c35de758ce650ebf1cb6
+[OK]   optee_os    24 branches   rp016_m1: 814978eb15b92c3b97255a8c000f44cd84aac008
+[OK]   opensbi     30 branches   rp016_m1: cdd401f1517b4599b7d08ce13cd83859acc4cbb2
+[OK]   u-boot      10 branches   rp016_m1: 32bdb252fab83028768a269fb304b9356547ccbd
+[OK]   linux       14 branches   rp016_m1: 2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[OK]   qemu        61 branches   rp016_m1: 9c23f2a7b0b45277693a14074b1aaa827eecdb92
+[OK]   bm-app       8 branches   rp016_m1: 97545c35a74ad387f7790b02a35b0f2b4d29bb6e
+
+===== 2. Clone Buildroot (rp016_m1) =====
+cloning ... (this can take a few minutes)
+$ git clone --quiet -b 'rp016_m1' 'https://gitlab.com/riseproject/riscv-optee/buildroot.git' '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot'
+[OK]   clone finished
+
+===== 3. Buildroot HEAD (pin this) =====
+$ git branch --show-current
+rp016_m1
+$ git log -1 --format='commit  %H%ndate    %cI%nsubject %s'
+commit  d7204671a32ca2edc521c35de758ce650ebf1cb6
+date    2025-12-15T07:29:30-08:00
+subject make: point all repos to RISE Gitlab
+$ git describe --tags --always
+2024.08-3681-gd7204671a3
+$ git status --short | head -n 20
+
+===== 4. Defconfig (configs/qemu_riscv64_virt_optee_defconfig) =====
+$ cat 'configs/qemu_riscv64_virt_optee_defconfig'
+BR2_riscv=y
+BR2_RISCV_ISA_RVC=y
+BR2_TOOLCHAIN_EXTERNAL=y
+BR2_SYSTEM_DHCP="eth0"
+BR2_ROOTFS_OVERLAY="board/qemu/riscv64-virt-optee/rootfs_overlay"
+BR2_ROOTFS_POST_BUILD_SCRIPT="board/qemu/post-image.sh"
+BR2_ROOTFS_POST_IMAGE_SCRIPT="support/scripts/genimage.sh"
+BR2_ROOTFS_POST_BUILD_SCRIPT_ARGS="$(BR2_DEFCONFIG)"
+BR2_ROOTFS_POST_IMAGE_SCRIPT_ARGS="-c board/qemu/riscv64-virt-optee/genimage_sdcard.cfg"
+BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_CUSTOM_GIT=y
+BR2_LINUX_KERNEL_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/linux.git"
+BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="rp016_m1"
+BR2_LINUX_KERNEL_USE_ARCH_DEFAULT_CONFIG=y
+BR2_LINUX_KERNEL_DTS_SUPPORT=y
+BR2_LINUX_KERNEL_INTREE_DTS_NAME="qemu/qemu_rv64_virt_domain"
+BR2_LINUX_KERNEL_INSTALL_TARGET=y
+BR2_PACKAGE_OPTEE_EXAMPLES=y
+BR2_PACKAGE_OPTEE_TEST=y
+BR2_TARGET_ROOTFS_EXT2=y
+BR2_TARGET_ROOTFS_EXT2_SIZE="260M"
+BR2_TARGET_OPTEE_OS=y
+BR2_TARGET_OPTEE_OS_CUSTOM_GIT=y
+BR2_TARGET_OPTEE_OS_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/optee_os.git"
+BR2_TARGET_OPTEE_OS_CUSTOM_REPO_VERSION="rp016_m1"
+BR2_TARGET_OPTEE_OS_NEEDS_PYTHON_CRYPTOGRAPHY=y
+BR2_TARGET_OPTEE_OS_PLATFORM="virt"
+BR2_TARGET_OPTEE_OS_ADDITIONAL_VARIABLES="ARCH=riscv DEBUG=1 CFG_TEE_CORE_NB_CORE=2 CFG_NUM_THREADS=2 CFG_TEE_CORE_LOG_LEVEL=4 CFG_TEE_TA_LOG_LEVEL=4 CFG_UNWIND=y CFG_IN_TREE_EARLY_TAS=trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c CFG_SEMIHOSTING_CONSOLE=y CFG_SEMIHOSTING_CONSOLE_FILE=NULL CFG_TEE_CORE_DEBUG=y CFG_16550_UART=n CFG_RISCV_PLIC=n CFG_TDDRAM_START=0xF1000000 CFG_TDDRAM_SIZE=0x01000000"
+BR2_TARGET_OPTEE_OS_CORE_IMAGES="tee.bin"
+BR2_TARGET_OPENSBI=y
+BR2_TARGET_OPENSBI_CUSTOM_GIT=y
+BR2_TARGET_OPENSBI_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/opensbi.git"
+BR2_TARGET_OPENSBI_CUSTOM_REPO_VERSION="rp016_m1"
+BR2_TARGET_OPENSBI_PLAT="generic"
+BR2_TARGET_UBOOT=y
+BR2_TARGET_UBOOT_BUILD_SYSTEM_KCONFIG=y
+BR2_TARGET_UBOOT_CUSTOM_GIT=y
+BR2_TARGET_UBOOT_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/u-boot.git"
+BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION="rp016_m1"
+BR2_TARGET_UBOOT_BOARD_DEFCONFIG="qemu-riscv64_spl"
+BR2_TARGET_UBOOT_NEEDS_GNUTLS=y
+BR2_TARGET_UBOOT_NEEDS_OPTEE_TEE=y
+BR2_TARGET_UBOOT_NEEDS_OPTEE_TEE_BIN=y
+BR2_TARGET_UBOOT_NEEDS_OPENSBI=y
+BR2_TARGET_UBOOT_FORMAT_CUSTOM=y
+BR2_TARGET_UBOOT_FORMAT_CUSTOM_NAME="u-boot.itb"
+BR2_TARGET_UBOOT_SPL=y
+BR2_TARGET_UBOOT_SPL_NAME="spl/u-boot-spl"
+BR2_PACKAGE_HOST_GENIMAGE=y
+BR2_PACKAGE_HOST_QEMU=y
+BR2_PACKAGE_HOST_QEMU_SYSTEM_MODE=y
+
+===== 5. Custom sources in the defconfig -> commit SHA =====
+BR2_LINUX_KERNEL
+    url     : https://gitlab.com/riseproject/riscv-optee/linux.git
+    version : rp016_m1
+    -> 2912ca616fc806dbeeba2e1ac7a157e0843d6987  (refs/heads/rp016_m1)
+BR2_TARGET_OPTEE_OS
+    url     : https://gitlab.com/riseproject/riscv-optee/optee_os.git
+    version : rp016_m1
+    -> 814978eb15b92c3b97255a8c000f44cd84aac008  (refs/heads/rp016_m1)
+BR2_TARGET_OPENSBI
+    url     : https://gitlab.com/riseproject/riscv-optee/opensbi.git
+    version : rp016_m1
+    -> cdd401f1517b4599b7d08ce13cd83859acc4cbb2  (refs/heads/rp016_m1)
+BR2_TARGET_UBOOT
+    url     : https://gitlab.com/riseproject/riscv-optee/u-boot.git
+    version : rp016_m1
+    -> 32bdb252fab83028768a269fb304b9356547ccbd  (refs/heads/rp016_m1)
+
+-- other source-related lines (tarballs / custom git / host-qemu / optee packages) --
+3:BR2_TOOLCHAIN_EXTERNAL=y
+11:BR2_LINUX_KERNEL_CUSTOM_GIT=y
+18:BR2_PACKAGE_OPTEE_EXAMPLES=y
+19:BR2_PACKAGE_OPTEE_TEST=y
+22:BR2_TARGET_OPTEE_OS=y
+23:BR2_TARGET_OPTEE_OS_CUSTOM_GIT=y
+24:BR2_TARGET_OPTEE_OS_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/optee_os.git"
+25:BR2_TARGET_OPTEE_OS_CUSTOM_REPO_VERSION="rp016_m1"
+26:BR2_TARGET_OPTEE_OS_NEEDS_PYTHON_CRYPTOGRAPHY=y
+27:BR2_TARGET_OPTEE_OS_PLATFORM="virt"
+28:BR2_TARGET_OPTEE_OS_ADDITIONAL_VARIABLES="ARCH=riscv DEBUG=1 CFG_TEE_CORE_NB_CORE=2 CFG_NUM_THREADS=2 CFG_TEE_CORE_LOG_LEVEL=4 CFG_TEE_TA_LOG_LEVEL=4 CFG_UNWIND=y CFG_IN_TREE_EARLY_TAS=trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c CFG_SEMIHOSTING_CONSOLE=y CFG_SEMIHOSTING_CONSOLE_FILE=NULL CFG_TEE_CORE_DEBUG=y CFG_16550_UART=n CFG_RISCV_PLIC=n CFG_TDDRAM_START=0xF1000000 CFG_TDDRAM_SIZE=0x01000000"
+29:BR2_TARGET_OPTEE_OS_CORE_IMAGES="tee.bin"
+30:BR2_TARGET_OPENSBI=y
+31:BR2_TARGET_OPENSBI_CUSTOM_GIT=y
+32:BR2_TARGET_OPENSBI_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/opensbi.git"
+33:BR2_TARGET_OPENSBI_CUSTOM_REPO_VERSION="rp016_m1"
+34:BR2_TARGET_OPENSBI_PLAT="generic"
+35:BR2_TARGET_UBOOT=y
+36:BR2_TARGET_UBOOT_BUILD_SYSTEM_KCONFIG=y
+37:BR2_TARGET_UBOOT_CUSTOM_GIT=y
+38:BR2_TARGET_UBOOT_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/u-boot.git"
+39:BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION="rp016_m1"
+40:BR2_TARGET_UBOOT_BOARD_DEFCONFIG="qemu-riscv64_spl"
+41:BR2_TARGET_UBOOT_NEEDS_GNUTLS=y
+42:BR2_TARGET_UBOOT_NEEDS_OPTEE_TEE=y
+43:BR2_TARGET_UBOOT_NEEDS_OPTEE_TEE_BIN=y
+44:BR2_TARGET_UBOOT_NEEDS_OPENSBI=y
+45:BR2_TARGET_UBOOT_FORMAT_CUSTOM=y
+46:BR2_TARGET_UBOOT_FORMAT_CUSTOM_NAME="u-boot.itb"
+47:BR2_TARGET_UBOOT_SPL=y
+48:BR2_TARGET_UBOOT_SPL_NAME="spl/u-boot-spl"
+50:BR2_PACKAGE_HOST_QEMU=y
+51:BR2_PACKAGE_HOST_QEMU_SYSTEM_MODE=y
+
+===== 6. Package files that point at RISE / GitLab sources =====
+--- package/networkd-dispatcher/networkd-dispatcher.mk
+7:NETWORKD_DISPATCHER_VERSION = 2.2.4
+8:NETWORKD_DISPATCHER_SOURCE = networkd-dispatcher-$(NETWORKD_DISPATCHER_VERSION).tar.bz2
+9:NETWORKD_DISPATCHER_SITE = https://gitlab.com/craftyguy/networkd-dispatcher/-/archive/$(NETWORKD_DISPATCHER_VERSION)
+--- package/kvm-unit-tests/kvm-unit-tests.mk
+7:KVM_UNIT_TESTS_VERSION = 2024-01-08
+8:KVM_UNIT_TESTS_SOURCE = kvm-unit-tests-v$(KVM_UNIT_TESTS_VERSION).tar.bz2
+9:KVM_UNIT_TESTS_SITE = https://gitlab.com/kvm-unit-tests/kvm-unit-tests/-/archive/v$(KVM_UNIT_TESTS_VERSION)
+--- package/ntpsec/ntpsec.mk
+7:NTPSEC_VERSION = 1.2.3
+8:NTPSEC_SOURCE = ntpsec-NTPsec_$(subst .,_,$(NTPSEC_VERSION)).tar.bz2
+9:NTPSEC_SITE = https://gitlab.com/NTPsec/ntpsec/-/archive/NTPsec_$(subst .,_,$(NTPSEC_VERSION))
+--- package/apparmor/apparmor.mk
+9:APPARMOR_VERSION = $(APPARMOR_VERSION_MAJOR).7
+10:APPARMOR_SOURCE = apparmor-v$(APPARMOR_VERSION).tar.gz
+11:APPARMOR_SITE = https://gitlab.com/apparmor/apparmor/-/archive/v$(APPARMOR_VERSION)
+--- package/solarus/solarus.mk
+7:SOLARUS_VERSION = 1.6.5
+8:SOLARUS_SITE = \
+10:SOLARUS_SOURCE = solarus-v$(SOLARUS_VERSION).tar.bz2
+--- package/abootimg/abootimg.mk
+7:ABOOTIMG_VERSION = 1ebeb393252ab5aeed62e34bc439b6728444f06e
+8:ABOOTIMG_SITE = https://gitlab.com/ajs124/abootimg.git
+9:ABOOTIMG_SITE_METHOD = git
+--- package/pkg-download.mk
+--- package/sane-backends/sane-backends.mk
+7:SANE_BACKENDS_VERSION = 1.1.1
+8:SANE_BACKENDS_SITE = \
+--- package/iucode-tool/iucode-tool.mk
+7:IUCODE_TOOL_VERSION = 2.3.1
+8:IUCODE_TOOL_SOURCE = iucode-tool_$(IUCODE_TOOL_VERSION).tar.xz
+9:IUCODE_TOOL_SITE = https://gitlab.com/iucode-tool/releases/raw/master
+--- package/libtalloc/libtalloc.mk
+7:LIBTALLOC_VERSION = 2.4.2
+8:LIBTALLOC_SOURCE = talloc-$(LIBTALLOC_VERSION).tar.gz
+9:LIBTALLOC_SITE = https://www.samba.org/ftp/talloc
+--- package/gcc/gcc.mk
+11:GCC_VERSION = $(call qstrip,$(BR2_GCC_VERSION))
+14:GCC_SITE = $(call github,foss-for-synopsys-dwc-arc-processors,gcc,$(GCC_VERSION))
+15:GCC_SOURCE = gcc-$(GCC_VERSION).tar.gz
+17:GCC_SITE = $(BR2_GNU_MIRROR:/=)/gcc/gcc-$(GCC_VERSION)
+18:GCC_SOURCE = gcc-$(GCC_VERSION).tar.xz
+--- package/libapparmor/libapparmor.mk
+9:LIBAPPARMOR_VERSION = $(LIBAPPARMOR_VERSION_MAJOR).7
+10:LIBAPPARMOR_SOURCE = apparmor-v$(LIBAPPARMOR_VERSION).tar.gz
+11:LIBAPPARMOR_SITE = https://gitlab.com/apparmor/apparmor/-/archive/v$(LIBAPPARMOR_VERSION)
+--- package/gitlab-runner/gitlab-runner.mk
+7:GITLAB_RUNNER_VERSION = 15.5.0
+8:GITLAB_RUNNER_SITE = https://gitlab.com/gitlab-org/gitlab-runner/-/archive/v$(GITLAB_RUNNER_VERSION)
+--- package/fwupd-efi/fwupd-efi.mk
+7:FWUPD_EFI_VERSION = 1.7
+8:FWUPD_EFI_SITE = $(call github,fwupd,fwupd-efi,$(FWUPD_EFI_VERSION))
+
+===== 7. QEMU start script(s) =====
+--- board/pine64/rockpro64-ebbr/patches/optee-client/optee-client.hash
+# Locally calculated
+sha256  ac6dc2c0c253ea228ea230e537211a45475771050faf4e66fe64321de3a0a652  optee-client-4.5.0.tar.gz
+--- board/sifive/hifive-unmatched/readme.txt
+SiFive HiFive Unmatched
+=======================
+
+This file describes how to use the pre-defined Buildroot
+configuration for the SiFive HiFive Unmatched board.
+
+Further information about the HiFive Unmatched board can be found
+at https://www.sifive.com/boards/hifive-unmatched
+
+Building
+========
+
+Configure Buildroot using the default board configuration:
+
+  $ make hifive_unmatched_defconfig
+
+Customise the build as necessary:
+
+  $ make menuconfig
+
+Start the build:
+
+  $ make
+
+Result of the build
+===================
+
+Once the build has finished you will have the following files:
+
+    output/images/
+    +-- boot.scr
+    +-- fw_dynamic.bin
+    +-- fw_dynamic.elf
+    +-- fw_jump.bin
+    +-- fw_jump.elf
+    +-- hifive-unmatched-a00.dtb
+    +-- Image
+    +-- rootfs.cpio
+    +-- rootfs.ext2
+    +-- rootfs.ext4
+    +-- rootfs.tar
+    +-- sdcard.img
+    +-- u-boot.bin
+    +-- u-boot.itb
+    +-- u-boot-spl.bin
+
+
+Creating a bootable SD card with genimage
+=========================================
+
+By default Buildroot builds a SD card image for you. All you need to do
+is dd the image to your SD card, which can be done with the following
+command on your development host:
+
+  $ sudo dd if=output/images/sdcard.img of=/dev/sdb bs=4096
+
+The above example command assumes the SD card is accessed via a USB card
+reader and shows up as /dev/sdb on the host. Adjust it accordingly per
+your actual setup.
+
+Booting the SD card on the board
+================================
+
+Make sure that the all DIP switches are set to the off position for
+default boot mode (MSEL mode = 1011), insert the SD card and power
+up the board.
+
+Connect the USB cable and open minicom (/dev/ttyUSB1, 115200, 8N1).
+
+See the 'SiFive HiFive Unmatched Getting Started Guide' for
+more details (https://www.sifive.com/documentation).
+
+You will get a warning reported by fdisk when you examine the SD card.
+This is because the genimage_sdcard.cfg file doesn't specify the SD card
+size (as people will naturally have different sized cards), so the
+secondary GPT header is placed after the rootfs rather than at the end
+of the disk where it is expected to be.
+
+You will see something like this at boot time:
+
+[    0.989458] mmc0: host does not support reading read-only switch, assuming write-enable
+[    0.996772] mmc0: new SDHC card on SPI
+[    1.001634] mmcblk0: mmc0:0000 SD8GB 7.28 GiB
+[    1.038079] GPT:Primary header thinks Alt. header is not at the end of the disk.
+[    1.044759] GPT:52389 != 15264767
+[    1.048051] GPT:Alternate GPT header not at the end of the disk.
+[    1.054015] GPT:52389 != 15264767
+[    1.057323] GPT: Use GNU Parted to correct GPT errors.
+[    1.062479]  mmcblk0: p1 p2 p3
+
+
+Testing under QEMU
+==================
+
+The SD card image can be tested using QEMU:
+
+$ qemu-system-riscv64 -M sifive_u,msel=11 -smp 5 -m 8G \
+    -display none -serial stdio -nic user \
+    -bios output/images/u-boot-spl.bin \
+    -drive file=output/images/sdcard.img,if=sd
+--- board/sifive/hifive-unleashed/readme.txt
+SiFive HiFive Unleashed
+=======================
+
+This file describes how to use the pre-defined Buildroot
+configuration for the SiFive HiFive Unleashed board.
+
+Further information about the HiFive Unleashed board can be found
+at https://www.sifive.com/boards/hifive-unleashed
+
+Building
+========
+
+Configure Buildroot using the default board configuration:
+
+  $ make hifive_unleashed_defconfig
+
+Customise the build as necessary:
+
+  $ make menuconfig
+
+Start the build:
+
+  $ make
+
+Result of the build
+===================
+
+Once the build has finished you will have the following files:
+
+    output/images/
+    +-- boot.scr
+    +-- fw_dynamic.bin
+    +-- fw_dynamic.elf
+    +-- fw_jump.bin
+    +-- fw_jump.elf
+    +-- hifive-unleashed-a00.dtb
+    +-- Image
+    +-- rootfs.cpio
+    +-- rootfs.ext2
+    +-- rootfs.ext4
+    +-- rootfs.tar
+    +-- sdcard.img
+    +-- u-boot.bin
+    +-- u-boot.itb
+    +-- u-boot-spl.bin
+
+
+Creating a bootable SD card with genimage
+=========================================
+
+By default Buildroot builds a SD card image for you. All you need to do
+is dd the image to your SD card, which can be done with the following
+command on your development host:
+
+  $ sudo dd if=output/images/sdcard.img of=/dev/sdb bs=4096
+
+The above example command assumes the SD card is accessed via a USB card
+reader and shows up as /dev/sdb on the host. Adjust it accordingly per
+your actual setup.
+
+Booting the SD card on the board
+================================
+
+Make sure that the all DIP switches are set to the off position for
+default boot mode (MSEL mode = 1011), insert the SD card and power
+up the board.
+
+Connect the USB cable and open minicom (/dev/ttyUSB1, 115200, 8N1).
+
+See the 'SiFive HiFive Unleashed Getting Started Guide' for
+more details (https://www.sifive.com/documentation).
+
+You will get a warning reported by fdisk when you examine the SD card.
+This is because the genimage_sdcard.cfg file doesn't specify the SD card
+size (as people will naturally have different sized cards), so the
+secondary GPT header is placed after the rootfs rather than at the end
+of the disk where it is expected to be.
+
+You will see something like this at boot time:
+
+[    0.989458] mmc0: host does not support reading read-only switch, assuming write-enable
+[    0.996772] mmc0: new SDHC card on SPI
+[    1.001634] mmcblk0: mmc0:0000 SD8GB 7.28 GiB
+[    1.038079] GPT:Primary header thinks Alt. header is not at the end of the disk.
+[    1.044759] GPT:52389 != 15264767
+[    1.048051] GPT:Alternate GPT header not at the end of the disk.
+[    1.054015] GPT:52389 != 15264767
+[    1.057323] GPT: Use GNU Parted to correct GPT errors.
+[    1.062479]  mmcblk0: p1 p2 p3
+
+
+Creating a bootable SPI flash with genimage
+===========================================
+
+Adjust Buildroot configuration by:
+
+  $ make menuconfig
+
+Change "System configuration" -> "Extra arguments passed to custom scripts"
+value to "-c board/sifive/common/genimage_spi-nor.cfg", save the
+configuration and build. This creates a output/images/spi-nor.img that can
+be programmed to the on-board SPI flash.
+
+Boot the board from the SD card prepared above, stop the U-Boot auto boot,
+and type the following commands to program the whole SPI flash:
+
+  => tftp 82000000 output/images/spi-nor.img
+  => sf probe
+  => sf update 82000000 0 2000000
+
+Booting the SPI flash on the board
+==================================
+
+Make sure that the all DIP switches are set to the off position for
+default boot mode (MSEL mode = 0110) to boot from SPI flash.
+
+Testing under QEMU
+==================
+
+The SD card image can be tested using QEMU:
+--- board/qemu/riscv64-virt-efi/readme.txt
+Intro
+=====
+
+This is a RISC-V 64bit UEFI Linux boot demo in QEmu virt machine.
+
+Build
+=====
+
+    make qemu_riscv64_virt_efi_defconfig
+    make
+
+Emulation
+=========
+
+Run the emulation with:
+
+    qemu-system-riscv64 \
+        -M virt,pflash0=pflash0,pflash1=pflash1,acpi=off \
+        -smp 4 \
+        -m 1024 \
+        -nographic \
+        -blockdev node-name=pflash0,driver=file,read-only=on,filename=output/images/RISCV_VIRT_CODE.fd \
+        -blockdev node-name=pflash1,driver=file,filename=output/images/RISCV_VIRT_VARS.fd \
+        \
+        -drive file=output/images/disk.img,format=raw \
+        \
+        -netdev user,id=net0 \
+        -device virtio-net-device,netdev=net0 # qemu_riscv64_virt_efi_defconfig
+
+Note: for information, qemu version >= 8.0.0 is needed for this UEFI
+Linux demo. It introduced the two pflash memories (previous versions
+had only one). The host-qemu package in Buildroot (enabled in this
+defconfig) is sufficient to run this demo. In case another qemu is
+used (for example, from the host OS), make sure to check the version
+requirement.
+--- board/qemu/riscv64-virt/readme.txt
+Run Linux in emulation with:
+
+  qemu-system-riscv64 -M virt -bios output/images/fw_jump.bin -kernel output/images/Image -append "rootwait root=/dev/vda ro" -drive file=output/images/rootfs.ext2,format=raw -netdev user,id=net0 -device virtio-net-device,netdev=net0 -nographic # qemu_riscv64_virt_defconfig
+
+  qemu-system-riscv64 -M virt -bios none -kernel output/images/Image -append "rootwait root=/dev/vda ro" -drive file=output/images/rootfs.ext2,format=raw,id=hd0,if=none -device virtio-blk-device,drive=hd0 -nographic -cpu rv64,mmu=off -netdev user,id=net0 -device virtio-net-device,netdev=net0 # qemu_riscv64_nommu_virt_defconfig
+
+The login prompt will appear in the terminal that started Qemu.
+
+===== 8. Size of work/buildroot =====
+$ du -sh .
+210M	.
+
+===== 9. Summary =====
+[OK]   Buildroot cloned: d7204671a32ca2edc521c35de758ce650ebf1cb6
+Next   : paste this log and gate01_remote_branches_20261105-214849.txt into the chat

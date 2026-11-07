@@ -1,0 +1,179 @@
+
+===== 0. Meta =====
+Gate      : 03 closure check (audit follow-up; no build, no QEMU)
+Timestamp : 20261107-102857
+Script    : scripts/gate03_closure_check.sh  sha256=5120d843c3ffbdef049925791c157d96fffd2c7cf995b7889568f7692896afee
+
+===== 1. Evidence preservation =====
+-- raw log permissions (before -> after) --
+logs/gate01/raw          dir 775 -> 700   files not 600: 0
+logs/gate02/raw          dir 775 -> 700   files not 600: 0
+logs/gate03/raw          dir 700 -> 700   files not 600: 0
+-- scripts as run (copied only if the sha256 equals the value recorded at run time) --
+[OK]   gate01_fetch_sources.sh  -> logs/gate01/as-run/  (ad843b3352e00e57)
+[OK]   gate02_memory_check.sh   -> logs/gate02/as-run/  (8708532dc29cf539)
+[OK]   gate02_build.sh          -> logs/gate02/as-run/  (609db2e9747802d8)
+[OK]   gate03_boot_xtest.sh     -> logs/gate03/as-run/  (7339bb1764efd210)
+[OK]   gate03_console.py        -> logs/gate03/as-run/  (df46eb9f55aa706f)
+[OK]   gate03_diag_subkey.sh    -> logs/gate03/as-run/  (b17108e207ec4520)
+[INFO] gate00_env_check.sh: the sha256 of the version that produced the G00 log was not recorded
+       (the G00 script predates the script-hash logging); current scripts/gate00_env_check.sh is a later
+       revision (project-root detection only) and is NOT claimed to be the executed version.
+[INFO] logs/gate01/raw/gate01_fetch_sources.pre-audit.sh (version before the audit fixes) is preserved
+
+===== 2. G02 artifacts: still identical? =====
+[SAME]    bm-app.elf                   99fac1d9a5f458e7
+[SAME]    fw_dynamic.bin               10705fa71fd848c6
+[SAME]    fw_dynamic.elf               9833f9b16b8fa046
+[SAME]    fw_jump.bin                  de9eabd5c9a89a5e
+[SAME]    fw_jump.elf                  1d824dbeac50d71f
+[SAME]    Image                        66e13d43d5071e1c
+[SAME]    qemu_rv64_virt_domain.dtb    6e1e8c35e2d2b610
+[SAME]    rootfs.ext2                  2f1d2e1e33876fc2
+[SAME]    rootfs.tar                   7a9480377aa0075f
+[CHANGED] sdcard.img                   G02 cebd9fe83b05be19  now dec313128728f535
+[SAME]    tee.bin                      2fe97c472ac8c05c
+[SAME]    u-boot.bin                   7068bd390cb09806
+[SAME]    u-boot.itb                   a5fde1f241b7308e
+[SAME]    u-boot-spl                   8758196e22581238
+[INFO] sdcard.img differs from G02: the G03 guest mounted its root file system read-write
+       (secure storage, xtest) and could not remount it read-only at poweroff.
+$ cp --reflink=auto -p output/images/sdcard.img '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/evidence/sdcard.post-G03.img' && chmod 444 '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/evidence/sdcard.post-G03.img'
+[rc=0]
+post-G03 sdcard.img sha256: dec313128728f53573679bb80094c5307e48a7adc281aeeeff55c73bd75ed1c6
+[INFO] output/images/sdcard.img itself is left untouched. Future boots must use a copy or -snapshot.
+
+===== 3. regression_1039 - which key does OP-TEE actually embed? =====
+python used for sign_encrypt.py: output/host/bin/python3
+generated public key file: output/build/optee-os-custom/out/core/ta_pub_key.c
+embedded in OP-TEE     : RSA-4096, modulus sha256 ec00a6a57c4a34f1
+-- key-related settings of the OP-TEE build --
+CFG_CORE_HUK_SUBKEY_COMPAT_USE_OTP_DIE_ID=n
+CFG_CORE_HUK_SUBKEY_COMPAT=y
+$ ls -l custom/optee-os/keys/
+total 4
+-rw-rw-r-- 1 <USER> <USER> 3272 Nov  6 20:44 default.pem
+lrwxrwxrwx 1 <USER> <USER>   11 Nov  6 20:44 default_ta.pem -> default.pem
+[rc=0]
+keys/default.pem (now) : RSA-4096, modulus sha256 ec00a6a57c4a34f1
+-- history of the default key (newest first, follows the 2023 rename) --
+5d5d7d0b1c03 2025-05-09 keys: increase default RSA key size to 4096 bits
+12fc37711783 2023-05-31 keys: rename the default key to default.pem
+bc420748bfc4 2015-09-09 TA as ELF + signature
+previous default key   : RSA-2048, modulus sha256 bc5c24a3c79f65ac  (from 12fc37711783:keys/default.pem)
+[OK]   OP-TEE embeds keys/default.pem (identical modulus)
+
+===== 4. regression_1039 - signed headers and subkey chain =====
+top_level_subkey.bin                         type=subkey        algo=RSASSA_PKCS1_PSS_MGF1_SHA256 sig=256 B (RSA-2048)
+mid_level_subkey.bin                         type=subkey        algo=RSASSA_PKCS1_PSS_MGF1_SHA256 sig=256 B (RSA-2048)
+identity_subkey2.bin                         type=subkey        algo=RSASSA_PKCS1_PSS_MGF1_SHA256 sig=256 B (RSA-2048)
+5c206987-16a3-59cc-ab0f-64b9cfc9e758.ta      type=subkey        algo=RSASSA_PKCS1_PSS_MGF1_SHA256 sig=256 B (RSA-2048)
+a720ccbb-51da-417d-b82e-e5445d474a7a.ta      type=subkey        algo=RSASSA_PKCS1_PSS_MGF1_SHA256 sig=256 B (RSA-2048)
+8aaaf200-2450-11e4-abe2-0002a5d5c51b.ta      type=bootstrap TA  algo=RSASSA_PKCS1_PSS_MGF1_SHA256 sig=512 B (RSA-4096)
+(OP-TEE subkeys: the ROOT key verifies top_level_subkey and identity_subkey2;
+ top_level_subkey verifies mid_level_subkey; the last subkey verifies the TA)
+$ output/host/bin/python3 custom/optee-os/scripts/sign_encrypt.py display --in output/target/lib/optee_armtz/5c206987-16a3-59cc-ab0f-64b9cfc9e758.ta
+Subkey
+ struct shdr
+  magic:      0x4f545348
+  img_type:   3 (SHDR_SUBKEY)
+  img_size:   320 bytes
+  algo:       0x70414930 (TEE_ALG_RSASSA_PKCS1_PSS_MGF1_SHA256)
+  hash_size:  32 bytes
+  sig_size:   256 bytes
+  hash:       f573f329fe77be686ce71647909c4ea35b5e1cd7de86369bd7d9fca31f6a4d65
+ struct shdr_subkey
+  uuid:       f04fa996-148a-453c-b037-1dcfbad120a6
+  name_size:  64
+  subkey_version: 1
+  max_depth:  4
+  algo:       0x70414930 (TEE_ALG_RSASSA_PKCS1_PSS_MGF1_SHA256)
+  attr_count: 2
+  next name:  "mid_level_subkey"
+Next header at offset: 692 (0x2b4)
+Subkey
+ struct shdr
+  magic:      0x4f545348
+  img_type:   3 (SHDR_SUBKEY)
+  img_size:   320 bytes
+  algo:       0x70414930 (TEE_ALG_RSASSA_PKCS1_PSS_MGF1_SHA256)
+  hash_size:  32 bytes
+  sig_size:   256 bytes
+  hash:       233a6dcf1a2cf69e50cde8e20c4129157da707c76fa86ce12ee31037edef02d7
+ struct shdr_subkey
+  uuid:       1a5948c5-1aa0-518c-86f4-be6f6a057b16
+  name_size:  64
+  subkey_version: 1
+  max_depth:  3
+  algo:       0x70414930 (TEE_ALG_RSASSA_PKCS1_PSS_MGF1_SHA256)
+  attr_count: 2
+  next name:  "subkey1_ta"
+Next header at offset: 1384 (0x568)
+Bootstrap TA
+ struct shdr
+  magic:      0x4f545348
+  img_type:   1 (SHDR_BOOTSTRAP_TA)
+  img_size:   113432 bytes
+  algo:       0x70414930 (TEE_ALG_RSASSA_PKCS1_PSS_MGF1_SHA256)
+  hash_size:  32 bytes
+  sig_size:   256 bytes
+  hash:       0a165314c9527a2885b2550eb047bf66d0ab2c2e2b164d3309676a71354dad18
+ struct shdr_bootstrap_ta
+  uuid:       5c206987-16a3-59cc-ab0f-64b9cfc9e758
+  ta_version: 0
+ TA offset:  1712 (0x6b0) bytes
+ TA size:    113432 (0x1bb18) bytes
+[rc=0] (measurement, not counted as failure)
+$ output/host/bin/python3 custom/optee-os/scripts/sign_encrypt.py display --in output/target/lib/optee_armtz/a720ccbb-51da-417d-b82e-e5445d474a7a.ta
+Subkey
+ struct shdr
+  magic:      0x4f545348
+  img_type:   3 (SHDR_SUBKEY)
+  img_size:   320 bytes
+  algo:       0x70414930 (TEE_ALG_RSASSA_PKCS1_PSS_MGF1_SHA256)
+  hash_size:  32 bytes
+  sig_size:   256 bytes
+  hash:       9ee52722d86efc4aa33ffc209adb0f9dc7c36ad6ddb2efdd73b8aa4b0ffbb8ec
+ struct shdr_subkey
+  uuid:       a720ccbb-51da-417d-b82e-e5445d474a7a
+  name_size:  0
+  subkey_version: 1
+  max_depth:  0
+  algo:       0x70414930 (TEE_ALG_RSASSA_PKCS1_PSS_MGF1_SHA256)
+  attr_count: 2
+  next name:  ""
+Next header at offset: 628 (0x274)
+Bootstrap TA
+ struct shdr
+  magic:      0x4f545348
+  img_type:   1 (SHDR_BOOTSTRAP_TA)
+  img_size:   113432 bytes
+  algo:       0x70414930 (TEE_ALG_RSASSA_PKCS1_PSS_MGF1_SHA256)
+  hash_size:  32 bytes
+  sig_size:   256 bytes
+  hash:       f6b593b99165f607c85dd60d68ff1749d5ebcb84048d64ab3492efa17aa6b5f6
+ struct shdr_bootstrap_ta
+  uuid:       a720ccbb-51da-417d-b82e-e5445d474a7a
+  ta_version: 0
+ TA offset:  956 (0x3bc) bytes
+ TA size:    113432 (0x1bb18) bytes
+[rc=0] (measurement, not counted as failure)
+
+===== 5. regression_1039 - control test with sign_encrypt.py verify =====
+hello_world TA  / CURRENT key (control)      rc=0  TA UUID: 8aaaf200-2450-11e4-abe2-0002a5d5c51b
+subkey1 TA      / CURRENT key                rc=1  Subkey UUID: f04fa996-148a-453c-b037-1dcfbad120a6
+subkey2 TA      / CURRENT key                rc=1  Subkey UUID: a720ccbb-51da-417d-b82e-e5445d474a7a
+subkey1 TA      / PREVIOUS key               rc=0  TA UUID: 5c206987-16a3-59cc-ab0f-64b9cfc9e758
+subkey2 TA      / PREVIOUS key               rc=1  Exception: UUID a720ccbb-51da-417d-b82e-e5445d474a7a does not match b'\xa7 \xcc\xbbQ\xdaA}\xb8.\xe5D]GJz'
+
+===== 6. Interpretation =====
+embedded key = keys/default.pem : yes
+hello_world / current key       : PASS   (expected PASS)
+subkey TAs  / current key       : FAIL / FAIL   (G03 runtime: rejected)
+subkey TAs  / previous key      : PASS / FAIL
+[RESULT] CAUSE NOT PROVEN by this test - see sections 3-5. The size mismatch remains a
+         strong hypothesis only.
+
+===== 9. Summary =====
+Failed checks : 0   (verify results are measurements, not failures)
+Next          : upload logs/gate03/gate03_closure_check_20261107-102857.log and its .sha256 manifest

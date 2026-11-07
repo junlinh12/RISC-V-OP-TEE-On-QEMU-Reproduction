@@ -1,0 +1,177 @@
+[    0.362008] riscv-pmu-sbi: 16 firmware and 18 hardware counters
+[    0.362361] riscv-pmu-sbi: Perf sampling/filtering is not supported as sscof extension is not available
+[    0.368881] NET: Registered PF_INET6 protocol family
+[    0.373800] Segment Routing with IPv6
+[    0.374016] In-situ OAM (IOAM) with IPv6
+[    0.374381] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    0.376198] NET: Registered PF_PACKET protocol family
+[    0.377278] 9pnet: Installing 9P2000 support
+[    0.377609] Key type dns_resolver registered
+[    0.543332] clk: Disabling unused clocks
+[    0.543970] PM: genpd: Disabling unused power domains
+[    0.544425] ALSA device list:
+[    0.544708]   No soundcards found.
+[    0.554230] EXT4-fs (vda1): mounting ext2 file system using the ext4 subsystem
+[    0.564805] EXT4-fs (vda1): mounted filesystem 5c4ce533-66bc-44f5-be64-baadbf707eac r/w without journal. Quota mode: disabled.
+[    0.565640] VFS: Mounted root (ext2 filesystem) on device 254:1.
+[    0.567687] devtmpfs: mounted
+[    0.597793] Freeing unused kernel image (initmem) memory: 2388K
+[    0.598499] Run /sbin/init as init process
+[    0.704523] EXT4-fs (vda1): re-mounted 5c4ce533-66bc-44f5-be64-baadbf707eac.
+Saving 256 bits of creditable seed for next boot
+Starting syslogd: OK
+Starting klogd: OK
+Running sysctl: OK
+Starting tee-supplicant: Using device /dev/teepriv0.
+ERR [89] TSUP:main:908: make_daemon(): -1
+FAIL
+Starting network: udhcpc: started, v1.37.0
+udhcpc: broadcasting discover
+udhcpc: broadcasting select for <IPv4>, server <IPv4>
+udhcpc: lease of <IPv4> obtained from <IPv4>, lease time 86400
+deleting routers
+adding dns <IPv4>
+OK
+Starting crond: OK
+
+Welcome to Buildroot
+buildroot login: root
+# uname -a; nproc; echo __G05B_RC1=$?__
+Linux buildroot 6.16.0-rc2 #1 SMP Sat Nov  7 14:57:48 <TZ> 2026 riscv64 GNU/Linux
+2
+__G05B_RC1=0__
+# dmesg | grep -iE 'aplic|imsic|aia|irqchip|riscv-intc'; echo __G05B_RC2=$?__
+[    0.000000] riscv-intc: 64 local interrupts mapped
+[    0.228705] riscv-aplic d000000.interrupt-controller: 96 interrupts directly connected to 2 CPUs
+__G05B_RC2=0__
+# cat /proc/interrupts; echo __G05B_RC3=$?__
+           CPU0       CPU1       
+ 10:        298        245 RISC-V INTC   5 Edge      riscv-timer
+ 12:         10          0 APLIC-DIRECT  33 Level     virtio2
+ 14:        425          0 APLIC-DIRECT   7 Level     virtio1
+ 15:        259          0 APLIC-DIRECT   8 Level     virtio0
+ 16:          0          0 APLIC-DIRECT  11 Level     101000.rtc
+IPI0:        65         45  Rescheduling interrupts
+IPI1:        94        227  Function call interrupts
+IPI2:         0          0  CPU stop interrupts
+IPI3:         0          0  CPU stop (for crash dump) interrupts
+IPI4:         0          0  IRQ work interrupts
+IPI5:         0          0  Timer broadcast interrupts
+IPI6:         0          0  CPU backtrace interrupts
+IPI7:         0          0  KGDB roundup interrupts
+__G05B_RC3=0__
+# dd if=/dev/vda of=/dev/null bs=1M count=32 skip=64 2>&1 | tail -n 1; echo __G0
+5B_RC4=$?__
+32+0 records out
+__G05B_RC4=0__
+# cat /proc/interrupts; echo __G05B_RC5=$?__
+           CPU0       CPU1       
+ 10:        337        267 RISC-V INTC   5 Edge      riscv-timer
+ 12:         12          0 APLIC-DIRECT  33 Level     virtio2
+ 14:        661          0 APLIC-DIRECT   7 Level     virtio1
+ 15:        325          0 APLIC-DIRECT   8 Level     virtio0
+ 16:          0          0 APLIC-DIRECT  11 Level     101000.rtc
+IPI0:        65         48  Rescheduling interrupts
+IPI1:       100        272  Function call interrupts
+IPI2:         0          0  CPU stop interrupts
+IPI3:         0          0  CPU stop (for crash dump) interrupts
+IPI4:         0          0  IRQ work interrupts
+IPI5:         0          0  Timer broadcast interrupts
+IPI6:         0          0  CPU backtrace interrupts
+IPI7:         0          0  KGDB roundup interrupts
+__G05B_RC5=0__
+# basename $(readlink /sys/block/vda/device); echo __G05B_RC6=$?__
+virtio0
+__G05B_RC6=0__
+# echo 1 > /proc/irq/15/smp_affinity_list; echo __G05B_RC7=$?__
+__G05B_RC7=0__
+# cat /proc/interrupts; echo __G05B_RC8=$?__
+           CPU0       CPU1       
+ 10:        360        280 RISC-V INTC   5 Edge      riscv-timer
+ 12:         12          0 APLIC-DIRECT  33 Level     virtio2
+ 14:       1012          0 APLIC-DIRECT   7 Level     virtio1
+ 15:        325          0 APLIC-DIRECT   8 Level     virtio0
+ 16:          0          0 APLIC-DIRECT  11 Level     101000.rtc
+IPI0:        65         51  Rescheduling interrupts
+IPI1:       104        279  Function call interrupts
+IPI2:         0          0  CPU stop interrupts
+IPI3:         0          0  CPU stop (for crash dump) interrupts
+IPI4:         0          0  IRQ work interrupts
+IPI5:         0          0  Timer broadcast interrupts
+IPI6:         0          0  CPU backtrace interrupts
+IPI7:         0          0  KGDB roundup interrupts
+__G05B_RC8=0__
+# dd if=/dev/vda of=/dev/null bs=1M count=32 skip=128 2>&1 | tail -n 1; echo __G
+05B_RC9=$?__
+32+0 records out
+__G05B_RC9=0__
+# cat /proc/interrupts; echo __G05B_RC10=$?__
+           CPU0       CPU1       
+ 10:        377        300 RISC-V INTC   5 Edge      riscv-timer
+ 12:         16          0 APLIC-DIRECT  33 Level     virtio2
+ 14:       1322          0 APLIC-DIRECT   7 Level     virtio1
+ 15:        325         66 APLIC-DIRECT   8 Level     virtio0
+ 16:          0          0 APLIC-DIRECT  11 Level     101000.rtc
+IPI0:        65         52  Rescheduling interrupts
+IPI1:       117        280  Function call interrupts
+IPI2:         0          0  CPU stop interrupts
+IPI3:         0          0  CPU stop (for crash dump) interrupts
+IPI4:         0          0  IRQ work interrupts
+IPI5:         0          0  Timer broadcast interrupts
+IPI6:         0          0  CPU backtrace interrupts
+IPI7:         0          0  KGDB roundup interrupts
+__G05B_RC10=0__
+# echo 0 > /proc/irq/15/smp_affinity_list; echo __G05B_RC11=$?__
+__G05B_RC11=0__
+# cat /proc/interrupts; echo __G05B_RC12=$?__
+           CPU0       CPU1       
+ 10:        385        314 RISC-V INTC   5 Edge      riscv-timer
+ 12:         16          0 APLIC-DIRECT  33 Level     virtio2
+ 14:       1509          0 APLIC-DIRECT   7 Level     virtio1
+ 15:        325         66 APLIC-DIRECT   8 Level     virtio0
+ 16:          0          0 APLIC-DIRECT  11 Level     101000.rtc
+IPI0:        66         52  Rescheduling interrupts
+IPI1:       122        283  Function call interrupts
+IPI2:         0          0  CPU stop interrupts
+IPI3:         0          0  CPU stop (for crash dump) interrupts
+IPI4:         0          0  IRQ work interrupts
+IPI5:         0          0  Timer broadcast interrupts
+IPI6:         0          0  CPU backtrace interrupts
+IPI7:         0          0  KGDB roundup interrupts
+__G05B_RC12=0__
+# dd if=/dev/vda of=/dev/null bs=1M count=32 skip=192 2>&1 | tail -n 1; echo __G
+05B_RC13=$?__
+32+0 records out
+__G05B_RC13=0__
+# cat /proc/interrupts; echo __G05B_RC14=$?__
+           CPU0       CPU1       
+ 10:        406        331 RISC-V INTC   5 Edge      riscv-timer
+ 12:         16          0 APLIC-DIRECT  33 Level     virtio2
+ 14:       1810          0 APLIC-DIRECT   7 Level     virtio1
+ 15:        389         66 APLIC-DIRECT   8 Level     virtio0
+ 16:          0          0 APLIC-DIRECT  11 Level     101000.rtc
+IPI0:        69         52  Rescheduling interrupts
+IPI1:       124        298  Function call interrupts
+IPI2:         0          0  CPU stop interrupts
+IPI3:         0          0  CPU stop (for crash dump) interrupts
+IPI4:         0          0  IRQ work interrupts
+IPI5:         0          0  Timer broadcast interrupts
+IPI6:         0          0  CPU backtrace interrupts
+IPI7:         0          0  KGDB roundup interrupts
+__G05B_RC14=0__
+# poweroff
+# Stopping crond: stopped /usr/sbin/crond (pid 127)
+OK
+Stopping network: OK
+Stopping tee-supplicant: FAIL
+Stopping klogd: OK
+Stopping syslogd: stopped /sbin/syslogd (pid 75)
+OK
+Seeding 256 bits and crediting
+Saving 256 bits of creditable seed for next boot
+umount: devtmpfs busy - remounted read-only
+[    3.321293] EXT4-fs (vda1): re-mounted 5c4ce533-66bc-44f5-be64-baadbf707eac ro.
+The system is going down NOW!
+Sent SIGTERM to all processes
+Sent SIGKILL to all processes
+Requesting system poweroff

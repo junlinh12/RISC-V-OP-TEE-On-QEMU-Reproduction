@@ -1,0 +1,1 @@
+buildroot|buildroot|https://gitlab.com/riseproject/riscv-optee/buildroot.git|dev-optee-mpxy-v9|b5e20ca925d0784473c854fae92c3fc5931802ee

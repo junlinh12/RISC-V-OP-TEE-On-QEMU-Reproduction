@@ -1,0 +1,1131 @@
+
+===== 0. Meta =====
+Gate      : 04 architecture evidence (read-only)
+Timestamp : 20261107-104416
+Script    : scripts/gate04_inspect_arch.sh  sha256=702f6be028c907af159fb6fe4e44b2874bb99fdedfc993a4615d73f6a000ba60
+[OK]   output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[OK]   output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd
+[OK]   custom/opensbi
+[OK]   custom/optee-os
+[OK]   output/build/optee-os-custom/out
+$ git -C custom/opensbi log -1 --format='opensbi   %h %cs %s'
+opensbi   cdd401f1 2025-06-23 lib: rpmi: Make RPMI drivers as non-experimental
+[rc=0]
+$ git -C custom/optee-os log -1 --format='optee_os  %h %cs %s'
+optee_os  814978eb1 2025-06-23 core: riscv: fix hartid at secondary hart entry point
+[rc=0]
+
+===== A. Isolation: OpenSBI domains and PMP =====
+
+--- A1 domain DTS source in the Linux tree
+file: arch/riscv/boot/dts/qemu/qemu_rv64_virt_domain.dts
+(no includes)
+      1  /dts-v1/;
+      2  
+      3  / {
+      4  	#address-cells = <0x02>;
+      5  	#size-cells = <0x02>;
+      6  	compatible = "riscv-virtio";
+      7  	model = "riscv-virtio,qemu";
+      8  
+      9  	poweroff {
+     10  		value = <0x5555>;
+     11  		offset = <0x00>;
+     12  		regmap = <0x06>;
+     13  		compatible = "syscon-poweroff";
+     14  	};
+     15  
+     16  	reboot {
+     17  		value = <0x7777>;
+     18  		offset = <0x00>;
+     19  		regmap = <0x06>;
+     20  		compatible = "syscon-reboot";
+     21  	};
+     22  
+     23  	platform-bus@4000000 {
+     24  		interrupt-parent = <0x05>;
+     25  		ranges = <0x00 0x00 0x4000000 0x2000000>;
+     26  		#address-cells = <0x01>;
+     27  		#size-cells = <0x01>;
+     28  		compatible = "qemu,platform\0simple-bus";
+     29  	};
+     30  
+     31  	memory@80000000 {
+     32  		device_type = "memory";
+     33  		reg = <0x00 0x80000000 0x01 0x00>;
+     34  	};
+     35  
+     36  	cpus {
+     37  		#address-cells = <0x01>;
+     38  		#size-cells = <0x00>;
+     39  		timebase-frequency = <0x989680>;
+     40  
+     41  		cpu0: cpu@0 {
+     42  			phandle = <0x03>;
+     43  			device_type = "cpu";
+     44  			reg = <0x00>;
+     45  			status = "okay";
+     46  			compatible = "riscv";
+     47  			opensbi-domain = <&tdomain>;
+     48  			riscv,cbop-block-size = <0x40>;
+     49  			riscv,cboz-block-size = <0x40>;
+     50  			riscv,cbom-block-size = <0x40>;
+     51  			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "h",
+     52  					       "zic64b", "zicbom", "zicbop", "zicboz", "ziccamoa",
+     53  					       "ziccif", "zicclsm", "ziccrse", "zicntr", "zicsr",
+     54  					       "zifencei", "zihintntl", "zihintpause", "zihpm",
+     55  					       "za64rs", "zawrs", "zfa", "zca", "zcd", "zba",
+     56  					       "zbb", "zbc", "zbs", "zkr", "ssccptr", "sscounterenw",
+     57  					       "sstc", "sstvala", "sstvecd", "svadu";
+     58  			riscv,isa-base = "rv64i";
+     59  			riscv,isa = "rv64imafdch_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicntr_zicsr_zifencei_zihintntl_zihintpause_zihpm_za64rs_zawrs_zfa_zca_zcd_zba_zbb_zbc_zbs_zkr_ssccptr_sscounterenw_sstc_sstvala_sstvecd_svadu";
+     60  			mmu-type = "riscv,sv57";
+     61  
+     62  			cpu0_intc: interrupt-controller {
+     63  				#interrupt-cells = <0x01>;
+     64  				interrupt-controller;
+     65  				compatible = "riscv,cpu-intc";
+     66  			};
+     67  		};
+     68  
+     69  		cpu1: cpu@1 {
+     70  			phandle = <0x01>;
+     71  			device_type = "cpu";
+     72  			reg = <0x01>;
+     73  			status = "okay";
+     74  			compatible = "riscv";
+     75  			opensbi-domain = <&tdomain>;
+     76  			riscv,cbop-block-size = <0x40>;
+     77  			riscv,cboz-block-size = <0x40>;
+     78  			riscv,cbom-block-size = <0x40>;
+     79  			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "h",
+     80  					       "zic64b", "zicbom", "zicbop", "zicboz", "ziccamoa",
+     81  					       "ziccif", "zicclsm", "ziccrse", "zicntr", "zicsr",
+     82  					       "zifencei", "zihintntl", "zihintpause", "zihpm",
+     83  					       "za64rs", "zawrs", "zfa", "zca", "zcd", "zba",
+     84  					       "zbb", "zbc", "zbs", "zkr", "ssccptr", "sscounterenw",
+     85  					       "sstc", "sstvala", "sstvecd", "svadu";
+     86  			riscv,isa-base = "rv64i";
+     87  			riscv,isa = "rv64imafdch_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicntr_zicsr_zifencei_zihintntl_zihintpause_zihpm_za64rs_zawrs_zfa_zca_zcd_zba_zbb_zbc_zbs_zkr_ssccptr_sscounterenw_sstc_sstvala_sstvecd_svadu";
+     88  			mmu-type = "riscv,sv57";
+     89  
+     90  			cpu1_intc: interrupt-controller {
+     91  				#interrupt-cells = <0x01>;
+     92  				interrupt-controller;
+     93  				compatible = "riscv,cpu-intc";
+     94  			};
+     95  		};
+     96  
+     97  		cpu-map {
+     98  
+     99  			cluster0 {
+    100  
+    101  				core0 {
+    102  					cpu = <&cpu0>;
+    103  				};
+    104  
+    105  				core1 {
+    106  					cpu = <&cpu1>;
+    107  				};
+    108  			};
+    109  		};
+    110  	};
+    111  
+    112  	pmu {
+    113  		riscv,event-to-mhpmcounters = <0x01 0x01 0x7fff9 0x02 0x02 0x7fffc 0x10019 0x10019 0x7fff8 0x1001b 0x1001b 0x7fff8 0x10021 0x10021 0x7fff8>;
+    114  		compatible = "riscv,pmu";
+    115  	};
+    116  
+    117  	fw-cfg@10100000 {
+    118  		dma-coherent;
+    119  		reg = <0x00 0x10100000 0x00 0x18>;
+    120  		compatible = "qemu,fw-cfg-mmio";
+    121  	};
+    122  
+    123  	flash@20000000 {
+    124  		bank-width = <0x04>;
+    125  		reg = <0x00 0x20000000 0x00 0x2000000 0x00 0x22000000 0x00 0x2000000>;
+    126  		compatible = "cfi-flash";
+    127  	};
+    128  
+    129  	chosen {
+    130  		stdout-path = "/soc/serial@10000000";
+    131  		rng-seed = <0xe2077995 0xa70427f9 0xfc0bfb55 0x2ade8826 0x455a7930 0x1ebfece1 0xcf193c21 0x50a2aacc>;
+    132  
+    133  		opensbi-domains {
+    134  			compatible = "opensbi,domain,config";
+    135  
+    136  			tmem: tmem {
+    137  				compatible = "opensbi,domain,memregion";
+    138  				base = <0x0 0xF1000000>;
+    139  				order = <24>; // 16MiB
+    140  			};
+    141  
+    142  			allmem: allmem {
+    143  				compatible = "opensbi,domain,memregion";
+    144  				base = <0x0 0x0>;
+    145  				order = <64>;
+    146  			};
+    147  
+    148  			tdomain: trusted-domain {
+    149  				compatible = "opensbi,domain,instance";
+    150  				regions = <&allmem 0x3f>;
+    151  				possible-harts = <&cpu0 &cpu1>;
+    152  				next-addr = <0x0 0xF1000000>; /* optee_os: CFG_TDDRAM_START */
+    153  				next-mode = <0x1>;
+    154  			};
+    155  
+    156  			udomain: untrusted-domain {
+    157  				compatible = "opensbi,domain,instance";
+    158  				regions = <&tmem 0x0>, <&allmem 0x3f>;
+    159  				possible-harts = <&cpu0 &cpu1>;
+    160  				boot-hart = <&cpu0>;
+    161  				next-addr = <0x0 0x81200000>; /* u-boot: CONFIG_TEXT_BASE */
+    162  				next-mode = <0x1>;
+    163  			};
+    164  		};
+    165  	};
+    166  
+    167  	mpxy_mbox: sbi-mpxy-mbox {
+    168  		compatible = "riscv,sbi-mpxy-mbox";
+    169  		#mbox-cells = <2>;
+    170  	};
+    171  
+    172  	rpmi_mm_0 {
+    173  		opensbi-domain-instance = <&tdomain>;
+    174  		riscv,sbi-mpxy-channel-id = <0x0>;
+    175  		test,owner-hartid = <0x0>;
+    176  		test,reqfwd-channel-id = <0x10>;
+    177  		compatible = "riscv,sbi-mpxy-mm";
+    178  	};
+    179  
+    180  	rpmi_mm_1 {
+    181  		opensbi-domain-instance = <&tdomain>;
+    182  		riscv,sbi-mpxy-channel-id = <0x1>;
+    183  		test,owner-hartid = <0x1>;
+    184  		test,reqfwd-channel-id = <0x11>;
+    185  		compatible = "riscv,sbi-mpxy-mm";
+    186  	};
+    187  
+    188  	rpmi_reqfwd_0 {
+    189  		riscv,sbi-mpxy-channel-id = <0x10>;
+    190  		test,owner-hartid = <0x0>;
+    191  		compatible = "riscv,sbi-mpxy-reqfwd";
+    192  	};
+    193  
+    194  	rpmi_reqfwd_1 {
+    195  		riscv,sbi-mpxy-channel-id = <0x11>;
+    196  		test,owner-hartid = <0x1>;
+    197  		compatible = "riscv,sbi-mpxy-reqfwd";
+    198  	};
+    199  
+    200  	firmware {
+    201  		optee {
+    202  			compatible = "linaro,optee-tz";
+    203  			method = "smc";
+    204  			mboxes = <&mpxy_mbox 0x00 0x00>, <&mpxy_mbox 0x01 0x00>;
+    205  		};
+    206  	};
+    207  
+    208  	soc {
+    209  		#address-cells = <0x02>;
+    210  		#size-cells = <0x02>;
+    211  		compatible = "simple-bus";
+    212  		ranges;
+    213  
+    214  		serial@10000000 {
+    215  			interrupts = <0x0a>;
+    216  			interrupt-parent = <0x05>;
+    217  			clock-frequency = "\08@";
+    218  			reg = <0x00 0x10000000 0x00 0x100>;
+    219  			compatible = "ns16550a";
+    220  		};
+    221  
+    222  		test@100000 {
+    223  			phandle = <0x06>;
+    224  			reg = <0x00 0x100000 0x00 0x1000>;
+    225  			compatible = "sifive,test1\0sifive,test0\0syscon";
+    226  		};
+    227  
+    228  		virtio_mmio@10008000 {
+    229  			interrupts = <0x08>;
+    230  			interrupt-parent = <0x05>;
+    231  			reg = <0x00 0x10008000 0x00 0x1000>;
+    232  			compatible = "virtio,mmio";
+    233  		};
+    234  
+    235  		virtio_mmio@10007000 {
+    236  			interrupts = <0x07>;
+    237  			interrupt-parent = <0x05>;
+    238  			reg = <0x00 0x10007000 0x00 0x1000>;
+    239  			compatible = "virtio,mmio";
+    240  		};
+    241  
+    242  		virtio_mmio@10006000 {
+    243  			interrupts = <0x06>;
+    244  			interrupt-parent = <0x05>;
+    245  			reg = <0x00 0x10006000 0x00 0x1000>;
+    246  			compatible = "virtio,mmio";
+    247  		};
+    248  
+    249  		virtio_mmio@10005000 {
+    250  			interrupts = <0x05>;
+    251  			interrupt-parent = <0x05>;
+    252  			reg = <0x00 0x10005000 0x00 0x1000>;
+    253  			compatible = "virtio,mmio";
+    254  		};
+    255  
+    256  		virtio_mmio@10004000 {
+    257  			interrupts = <0x04>;
+    258  			interrupt-parent = <0x05>;
+    259  			reg = <0x00 0x10004000 0x00 0x1000>;
+    260  			compatible = "virtio,mmio";
+    261  		};
+    262  
+    263  		virtio_mmio@10003000 {
+    264  			interrupts = <0x03>;
+    265  			interrupt-parent = <0x05>;
+    266  			reg = <0x00 0x10003000 0x00 0x1000>;
+    267  			compatible = "virtio,mmio";
+    268  		};
+    269  
+    270  		virtio_mmio@10002000 {
+    271  			interrupts = <0x02>;
+    272  			interrupt-parent = <0x05>;
+    273  			reg = <0x00 0x10002000 0x00 0x1000>;
+    274  			compatible = "virtio,mmio";
+    275  		};
+    276  
+    277  		virtio_mmio@10001000 {
+    278  			interrupts = <0x01>;
+    279  			interrupt-parent = <0x05>;
+    280  			reg = <0x00 0x10001000 0x00 0x1000>;
+    281  			compatible = "virtio,mmio";
+    282  		};
+    283  
+    284  		plic@c000000 {
+    285  			phandle = <0x05>;
+    286  			riscv,ndev = <0x5f>;
+    287  			reg = <0x00 0xc000000 0x00 0x600000>;
+    288  			interrupts-extended = <&cpu0_intc 0x0b &cpu0_intc 0x09
+    289  					       &cpu1_intc 0x0b &cpu1_intc 0x09>;
+    290  			interrupt-controller;
+    291  			compatible = "sifive,plic-1.0.0\0riscv,plic0";
+    292  			#address-cells = <0x00>;
+    293  			#interrupt-cells = <0x01>;
+    294  		};
+    295  
+    296  		clint@2000000 {
+    297  			interrupts-extended = <&cpu0_intc 0x03 &cpu0_intc 0x07
+    298  					       &cpu1_intc 0x03 &cpu1_intc 0x07>;
+    299  			reg = <0x00 0x2000000 0x00 0x10000>;
+    300  			compatible = "sifive,clint0\0riscv,clint0";
+    301  		};
+    302  
+    303  		pci@30000000 {
+    304  			interrupt-map-mask = <0x1800 0x00 0x00 0x07>;
+    305  			interrupt-map = <0x00 0x00 0x00 0x01 0x05 0x20 0x00 0x00 0x00 0x02 0x05 0x21 0x00 0x00 0x00 0x03 0x05 0x22 0x00 0x00 0x00 0x04 0x05 0x23 0x800 0x00 0x00 0x01 0x05 0x21 0x800 0x00 0x00 0x02 0x05 0x22 0x800 0x00 0x00 0x03 0x05 0x23 0x800 0x00 0x00 0x04 0x05 0x20 0x1000 0x00 0x00 0x01 0x05 0x22 0x1000 0x00 0x00 0x02 0x05 0x23 0x1000 0x00 0x00 0x03 0x05 0x20 0x1000 0x00 0x00 0x04 0x05 0x21 0x1800 0x00 0x00 0x01 0x05 0x23 0x1800 0x00 0x00 0x02 0x05 0x20 0x1800 0x00 0x00 0x03 0x05 0x21 0x1800 0x00 0x00 0x04 0x05 0x22>;
+    306  			ranges = <0x1000000 0x00 0x00 0x00 0x3000000 0x00 0x10000 0x2000000 0x00 0x40000000 0x00 0x40000000 0x00 0x40000000 0x3000000 0x04 0x00 0x04 0x00 0x04 0x00>;
+    307  			reg = <0x00 0x30000000 0x00 0x10000000>;
+    308  			dma-coherent;
+    309  			bus-range = <0x00 0xff>;
+    310  			linux,pci-domain = <0x00>;
+    311  			device_type = "pci";
+    312  			compatible = "pci-host-ecam-generic";
+    313  			#size-cells = <0x02>;
+    314  			#interrupt-cells = <0x01>;
+    315  			#address-cells = <0x03>;
+    316  		};
+    317  	};
+    318  };
+
+--- A2 decompiled DTB actually passed to QEMU (full file: logs/gate04/gate04_qemu_rv64_virt_domain.decompiled_20261107-104416.dts)
+$ output/host/bin/dtc -I dtb -O dts -o '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/logs/gate04/raw/dtb.dts' output/images/qemu_rv64_virt_domain.dtb 2>/dev/null
+[rc=0]
+-- node: opensbi-domains --
+		opensbi-domains {
+			compatible = "opensbi,domain,config";
+
+			tmem {
+				compatible = "opensbi,domain,memregion";
+				base = <0x00 0xf1000000>;
+				order = <0x18>;
+				phandle = <0x07>;
+			};
+
+			allmem {
+				compatible = "opensbi,domain,memregion";
+				base = <0x00 0x00>;
+				order = <0x40>;
+				phandle = <0x04>;
+			};
+
+			trusted-domain {
+				compatible = "opensbi,domain,instance";
+				regions = <0x04 0x3f>;
+				possible-harts = <0x03 0x01>;
+				next-addr = <0x00 0xf1000000>;
+				next-mode = <0x01>;
+				phandle = <0x02>;
+			};
+
+			untrusted-domain {
+				compatible = "opensbi,domain,instance";
+				regions = <0x07 0x00 0x04 0x3f>;
+				possible-harts = <0x03 0x01>;
+				boot-hart = <0x03>;
+				next-addr = <0x00 0x81200000>;
+				next-mode = <0x01>;
+			};
+		};
+-- node: cpus --
+awk: warning: escape sequence `\{' treated as plain `{'
+	cpus {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		timebase-frequency = <0x989680>;
+
+		cpu@0 {
+			phandle = <0x03>;
+			device_type = "cpu";
+			reg = <0x00>;
+			status = "okay";
+			compatible = "riscv";
+			opensbi-domain = <0x02>;
+			riscv,cbop-block-size = <0x40>;
+			riscv,cboz-block-size = <0x40>;
+			riscv,cbom-block-size = <0x40>;
+			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "h", "zic64b", "zicbom", "zicbop", "zicboz", "ziccamoa", "ziccif", "zicclsm", "ziccrse", "zicntr", "zicsr", "zifencei", "zihintntl", "zihintpause", "zihpm", "za64rs", "zawrs", "zfa", "zca", "zcd", "zba", "zbb", "zbc", "zbs", "zkr", "ssccptr", "sscounterenw", "sstc", "sstvala", "sstvecd", "svadu";
+			riscv,isa-base = "rv64i";
+			riscv,isa = "rv64imafdch_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicntr_zicsr_zifencei_zihintntl_zihintpause_zihpm_za64rs_zawrs_zfa_zca_zcd_zba_zbb_zbc_zbs_zkr_ssccptr_sscounterenw_sstc_sstvala_sstvecd_svadu";
+			mmu-type = "riscv,sv57";
+
+			interrupt-controller {
+				#interrupt-cells = <0x01>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+				phandle = <0x09>;
+			};
+		};
+
+		cpu@1 {
+			phandle = <0x01>;
+			device_type = "cpu";
+			reg = <0x01>;
+			status = "okay";
+			compatible = "riscv";
+			opensbi-domain = <0x02>;
+			riscv,cbop-block-size = <0x40>;
+			riscv,cboz-block-size = <0x40>;
+			riscv,cbom-block-size = <0x40>;
+			riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "h", "zic64b", "zicbom", "zicbop", "zicboz", "ziccamoa", "ziccif", "zicclsm", "ziccrse", "zicntr", "zicsr", "zifencei", "zihintntl", "zihintpause", "zihpm", "za64rs", "zawrs", "zfa", "zca", "zcd", "zba", "zbb", "zbc", "zbs", "zkr", "ssccptr", "sscounterenw", "sstc", "sstvala", "sstvecd", "svadu";
+			riscv,isa-base = "rv64i";
+			riscv,isa = "rv64imafdch_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicntr_zicsr_zifencei_zihintntl_zihintpause_zihpm_za64rs_zawrs_zfa_zca_zcd_zba_zbb_zbc_zbs_zkr_ssccptr_sscounterenw_sstc_sstvala_sstvecd_svadu";
+			mmu-type = "riscv,sv57";
+
+			interrupt-controller {
+				#interrupt-cells = <0x01>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+				phandle = <0x0a>;
+			};
+		};
+
+		cpu-map {
+
+			cluster0 {
+
+				core0 {
+					cpu = <0x03>;
+				};
+
+				core1 {
+					cpu = <0x01>;
+				};
+			};
+		};
+	};
+-- node: reserved-memory --
+-- node: memory --
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x00 0x80000000 0x01 0x00>;
+	};
+-- node: chosen --
+	chosen {
+		stdout-path = "/soc/serial@10000000";
+		rng-seed = <0xe2077995 0xa70427f9 0xfc0bfb55 0x2ade8826 0x455a7930 0x1ebfece1 0xcf193c21 0x50a2aacc>;
+
+		opensbi-domains {
+			compatible = "opensbi,domain,config";
+
+			tmem {
+				compatible = "opensbi,domain,memregion";
+				base = <0x00 0xf1000000>;
+				order = <0x18>;
+				phandle = <0x07>;
+			};
+
+			allmem {
+				compatible = "opensbi,domain,memregion";
+				base = <0x00 0x00>;
+				order = <0x40>;
+				phandle = <0x04>;
+			};
+
+			trusted-domain {
+				compatible = "opensbi,domain,instance";
+				regions = <0x04 0x3f>;
+				possible-harts = <0x03 0x01>;
+				next-addr = <0x00 0xf1000000>;
+				next-mode = <0x01>;
+				phandle = <0x02>;
+			};
+
+			untrusted-domain {
+				compatible = "opensbi,domain,instance";
+				regions = <0x07 0x00 0x04 0x3f>;
+				possible-harts = <0x03 0x01>;
+				boot-hart = <0x03>;
+				next-addr = <0x00 0x81200000>;
+				next-mode = <0x01>;
+			};
+		};
+	};
+-- nodes mentioning optee / mpxy / rpmi (compatible strings) --
+124:			compatible = "opensbi,domain,config";
+127:				compatible = "opensbi,domain,memregion";
+134:				compatible = "opensbi,domain,memregion";
+141:				compatible = "opensbi,domain,instance";
+150:				compatible = "opensbi,domain,instance";
+161:		compatible = "riscv,sbi-mpxy-mbox";
+171:		compatible = "riscv,sbi-mpxy-mm";
+179:		compatible = "riscv,sbi-mpxy-mm";
+185:		compatible = "riscv,sbi-mpxy-reqfwd";
+191:		compatible = "riscv,sbi-mpxy-reqfwd";
+197:			compatible = "linaro,optee-tz";
+-- node: firmware --
+awk: warning: escape sequence `\{' treated as plain `{'
+	firmware {
+
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+			mboxes = <0x08 0x00 0x00 0x08 0x01 0x00>;
+		};
+	};
+
+--- A3 OpenSBI: where domain regions become PMP entries
+$ git -C custom/opensbi grep -n -E '(sbi_hart_pmp_configure|sbi_hart_smepmp_configure|sbi_hart_oldpmp_configure|pmp_set)[[:space:]]*\(' -- lib/sbi
+lib/sbi/riscv_asm.c:304:int pmp_set(unsigned int n, unsigned long prot, unsigned long addr,
+lib/sbi/sbi_domain_context.c:122:	sbi_hart_pmp_configure(scratch);
+lib/sbi/sbi_hart.c:367:static void sbi_hart_smepmp_set(struct sbi_scratch *scratch,
+lib/sbi/sbi_hart.c:378:		sbi_platform_pmp_set(sbi_platform_ptr(scratch),
+lib/sbi/sbi_hart.c:381:		pmp_set(pmp_idx, pmp_flags, reg->base, reg->order);
+lib/sbi/sbi_hart.c:390:static int sbi_hart_smepmp_configure(struct sbi_scratch *scratch,
+lib/sbi/sbi_hart.c:427:		sbi_hart_smepmp_set(scratch, dom, reg, pmp_idx++, pmp_flags,
+lib/sbi/sbi_hart.c:453:		sbi_hart_smepmp_set(scratch, dom, reg, pmp_idx++, pmp_flags,
+lib/sbi/sbi_hart.c:465:static int sbi_hart_oldpmp_configure(struct sbi_scratch *scratch,
+lib/sbi/sbi_hart.c:498:			sbi_platform_pmp_set(sbi_platform_ptr(scratch),
+lib/sbi/sbi_hart.c:501:			pmp_set(pmp_idx++, pmp_flags, reg->base, reg->order);
+lib/sbi/sbi_hart.c:541:	sbi_platform_pmp_set(sbi_platform_ptr(scratch), SBI_SMEPMP_RESV_ENTRY,
+lib/sbi/sbi_hart.c:544:	pmp_set(SBI_SMEPMP_RESV_ENTRY, pmp_flags, base, order);
+lib/sbi/sbi_hart.c:560:int sbi_hart_pmp_configure(struct sbi_scratch *scratch)
+lib/sbi/sbi_hart.c:575:		rc = sbi_hart_smepmp_configure(scratch, pmp_count,
+lib/sbi/sbi_hart.c:578:		rc = sbi_hart_oldpmp_configure(scratch, pmp_count,
+lib/sbi/sbi_init.c:390:	rc = sbi_hart_pmp_configure(scratch);
+lib/sbi/sbi_init.c:469:	rc = sbi_hart_pmp_configure(scratch);
+lib/sbi/sbi_init.c:490:	rc = sbi_hart_pmp_configure(scratch);
+
+--- A4 OpenSBI: meaning of '*' in 'DomainN HARTs'
+     303  	bool is_covered;
+     304  	struct sbi_domain_memregion *reg, *reg1;
+     305  
+     306  	/* Check possible HARTs */
+     307  	if (!dom->possible_harts) {
+     308  		sbi_printf("%s: %s possible HART mask is NULL\n",
+     309  			   __func__, dom->name);
+     310  		return SBI_EINVAL;
+     311  	}
+     312  	sbi_hartmask_for_each_hartindex(i, dom->possible_harts) {
+     313  		if (!sbi_hartindex_valid(i)) {
+     314  			sbi_printf("%s: %s possible HART mask has invalid "
+     315  				   "hart %d\n", __func__,
+     316  				   dom->name, sbi_hartindex_to_hartid(i));
+
+--- A5 OpenSBI: opensbi-domains device-tree parser
+$ git -C custom/opensbi grep -n -E 'opensbi,domain,instance|possible-harts|next-addr|regions' -- lib/utils/fdt/fdt_domain.c
+lib/utils/fdt/fdt_domain.c:40:					      "opensbi,domain,instance"))
+lib/utils/fdt/fdt_domain.c:66:	const u32 *regions;
+lib/utils/fdt/fdt_domain.c:72:				      "opensbi,domain,instance"))
+lib/utils/fdt/fdt_domain.c:75:	regions = fdt_getprop(fdt, domain_offset, "regions", &len);
+lib/utils/fdt/fdt_domain.c:76:	if (!regions)
+lib/utils/fdt/fdt_domain.c:82:						fdt32_to_cpu(regions[2 * i]));
+lib/utils/fdt/fdt_domain.c:91:			fdt32_to_cpu(regions[(2 * i) + 1]), opaque);
+lib/utils/fdt/fdt_domain.c:245:	u32 max_regions;
+lib/utils/fdt/fdt_domain.c:261:	 * access permissions. M-mode regions can only be part of
+lib/utils/fdt/fdt_domain.c:272:	if (preg->max_regions <= preg->region_count)
+lib/utils/fdt/fdt_domain.c:300:				  flags, &preg->dom->regions[preg->region_count]);
+lib/utils/fdt/fdt_domain.c:324:	dom->regions = sbi_calloc(sizeof(*dom->regions),
+lib/utils/fdt/fdt_domain.c:326:	if (!dom->regions) {
+lib/utils/fdt/fdt_domain.c:332:	preg.max_regions = FDT_DOMAIN_REGION_MAX_COUNT;
+lib/utils/fdt/fdt_domain.c:337:		goto fail_free_regions;
+
+===== B. Switching and communication (the role SMC plays on Arm) =====
+
+--- B1 OpenSBI: domain context switch
+$ git -C custom/opensbi grep -n -E 'sbi_domain_context_(enter|exit)[[:space:]]*\(' -- lib include
+include/sbi/sbi_domain_context.h:20:int sbi_domain_context_enter(struct sbi_domain *dom);
+include/sbi/sbi_domain_context.h:29:int sbi_domain_context_exit(void);
+lib/sbi/sbi_domain_context.c:160:int sbi_domain_context_enter(struct sbi_domain *dom)
+lib/sbi/sbi_domain_context.c:177:int sbi_domain_context_exit(void)
+lib/utils/mpxy/fdt_mpxy_mm.c:99:	return sbi_domain_context_enter(mm->mm_domain);
+lib/utils/mpxy/fdt_mpxy_reqfwd.c:175:		sbi_domain_context_exit();
+
+--- B2 OpenSBI: MPXY / RPMI
+$ git -C custom/opensbi ls-files | grep -iE 'mpxy|rpmi'
+include/sbi/sbi_mpxy.h
+include/sbi_utils/mailbox/rpmi_mailbox.h
+include/sbi_utils/mailbox/rpmi_msgprot.h
+include/sbi_utils/mpxy/fdt_mpxy.h
+include/sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h
+lib/sbi/sbi_ecall_mpxy.c
+lib/sbi/sbi_mpxy.c
+lib/utils/cppc/fdt_cppc_rpmi.c
+lib/utils/hsm/fdt_hsm_rpmi.c
+lib/utils/mailbox/fdt_mailbox_rpmi_shmem.c
+lib/utils/mailbox/rpmi_mailbox.c
+lib/utils/mpxy/Kconfig
+lib/utils/mpxy/fdt_mpxy.c
+lib/utils/mpxy/fdt_mpxy_drivers.carray
+lib/utils/mpxy/fdt_mpxy_mm.c
+lib/utils/mpxy/fdt_mpxy_reqfwd.c
+lib/utils/mpxy/fdt_mpxy_rpmi_clock.c
+lib/utils/mpxy/fdt_mpxy_rpmi_mbox.c
+lib/utils/mpxy/fdt_mpxy_rpmi_sysmsi.c
+lib/utils/mpxy/objects.mk
+$ git -C custom/opensbi grep -n -E 'define SBI_EXT_MPXY' -- include
+include/sbi/sbi_ecall_interface.h:40:#define SBI_EXT_MPXY				0x4D505859
+include/sbi/sbi_ecall_interface.h:454:#define SBI_EXT_MPXY_GET_SHMEM_SIZE		0x0
+include/sbi/sbi_ecall_interface.h:455:#define SBI_EXT_MPXY_SET_SHMEM			0x1
+include/sbi/sbi_ecall_interface.h:456:#define SBI_EXT_MPXY_GET_CHANNEL_IDS		0x2
+include/sbi/sbi_ecall_interface.h:457:#define SBI_EXT_MPXY_READ_ATTRS			0x3
+include/sbi/sbi_ecall_interface.h:458:#define SBI_EXT_MPXY_WRITE_ATTRS		0x4
+include/sbi/sbi_ecall_interface.h:459:#define SBI_EXT_MPXY_SEND_MSG_WITH_RESP		0x5
+include/sbi/sbi_ecall_interface.h:460:#define SBI_EXT_MPXY_SEND_MSG_WITHOUT_RESP	0x6
+include/sbi/sbi_ecall_interface.h:461:#define SBI_EXT_MPXY_GET_NOTIFICATION_EVENTS	0x7
+
+--- B3 OpenSBI: everything that mentions OP-TEE
+$ git -C custom/opensbi grep -n -i 'optee' -- lib platform include firmware
+(no match / rc=1)
+
+--- B4 OP-TEE OS: RISC-V files and SBI / MPXY usage
+$ git -C custom/optee-os ls-files core/arch/riscv/kernel core/arch/riscv/include | grep -vE '\.(md|txt)$'
+core/arch/riscv/include/encoding.h
+core/arch/riscv/include/kernel/arch_scall.h
+core/arch/riscv/include/kernel/cache_helpers_arch.h
+core/arch/riscv/include/kernel/clint.h
+core/arch/riscv/include/kernel/delay_arch.h
+core/arch/riscv/include/kernel/misc_arch.h
+core/arch/riscv/include/kernel/riscv_elf.h
+core/arch/riscv/include/kernel/secure_partition.h
+core/arch/riscv/include/kernel/stmm_sp.h
+core/arch/riscv/include/kernel/tee_l2cc_mutex.h
+core/arch/riscv/include/kernel/thread_arch.h
+core/arch/riscv/include/kernel/thread_private_arch.h
+core/arch/riscv/include/kernel/tlb_helpers.h
+core/arch/riscv/include/kernel/user_access_arch.h
+core/arch/riscv/include/mm/core_mmu_arch.h
+core/arch/riscv/include/mm/generic_ram_layout.h
+core/arch/riscv/include/riscv.h
+core/arch/riscv/include/riscv_macros.S
+core/arch/riscv/include/rpmi_msgprot.h
+core/arch/riscv/include/sbi.h
+core/arch/riscv/include/sub.mk
+core/arch/riscv/include/tee/entry_fast.h
+core/arch/riscv/include/tee/optee_abi.h
+core/arch/riscv/include/tee/teeabi_opteed.h
+core/arch/riscv/include/tee/teeabi_opteed_macros.h
+core/arch/riscv/kernel/abort.c
+core/arch/riscv/kernel/arch_scall.c
+core/arch/riscv/kernel/arch_scall_rv.S
+core/arch/riscv/kernel/asm-defines.c
+core/arch/riscv/kernel/boot.c
+core/arch/riscv/kernel/cache_helpers_rv.S
+core/arch/riscv/kernel/csr_detect.S
+core/arch/riscv/kernel/entry.S
+core/arch/riscv/kernel/idle.c
+core/arch/riscv/kernel/kern.ld.S
+core/arch/riscv/kernel/link.mk
+core/arch/riscv/kernel/sbi.c
+core/arch/riscv/kernel/sbi_console.c
+core/arch/riscv/kernel/sbi_mpxy.c
+core/arch/riscv/kernel/semihosting_rv.S
+core/arch/riscv/kernel/spinlock.S
+core/arch/riscv/kernel/sub.mk
+core/arch/riscv/kernel/tee_time_rdtime.c
+core/arch/riscv/kernel/thread_arch.c
+core/arch/riscv/kernel/thread_optee_abi.c
+core/arch/riscv/kernel/thread_optee_abi_rv.S
+core/arch/riscv/kernel/thread_rv.S
+core/arch/riscv/kernel/unwind_rv.c
+$ git -C custom/optee-os grep -n -i -E 'mpxy|rpmi' -- core
+core/arch/riscv/include/rpmi_msgprot.h:6:#ifndef __RPMI_MSGPROT_H__
+core/arch/riscv/include/rpmi_msgprot.h:7:#define __RPMI_MSGPROT_H__
+core/arch/riscv/include/rpmi_msgprot.h:10:#define RPMI_MSG_HDR_SIZE		(8)
+core/arch/riscv/include/rpmi_msgprot.h:12:#define RPMI_MSG_DATA_SIZE(__slot_size) ((__slot_size) - RPMI_MSG_HDR_SIZE)
+core/arch/riscv/include/rpmi_msgprot.h:14:#define RPMI_SLOT_SIZE_MIN		(128)
+core/arch/riscv/include/rpmi_msgprot.h:16:/** RPMI Error Types */
+core/arch/riscv/include/rpmi_msgprot.h:17:enum rpmi_error {
+core/arch/riscv/include/rpmi_msgprot.h:19:	RPMI_SUCCESS		= 0,
+core/arch/riscv/include/rpmi_msgprot.h:21:	RPMI_ERR_FAILED		= -1,
+core/arch/riscv/include/rpmi_msgprot.h:23:	RPMI_ERR_NOTSUPP	= -2,
+core/arch/riscv/include/rpmi_msgprot.h:25:	RPMI_ERR_INVALID_PARAM    = -3,
+core/arch/riscv/include/rpmi_msgprot.h:30:	RPMI_ERR_DENIED		= -4,
+core/arch/riscv/include/rpmi_msgprot.h:32:	RPMI_ERR_INVALID_ADDR	= -5,
+core/arch/riscv/include/rpmi_msgprot.h:38:	RPMI_ERR_ALREADY	= -6,
+core/arch/riscv/include/rpmi_msgprot.h:43:	RPMI_ERR_EXTENSION	= -7,
+core/arch/riscv/include/rpmi_msgprot.h:45:	RPMI_ERR_HW_FAULT	= -8,
+core/arch/riscv/include/rpmi_msgprot.h:47:	RPMI_ERR_BUSY		= -9,
+core/arch/riscv/include/rpmi_msgprot.h:49:	RPMI_ERR_INVALID_STATE	= -10,
+core/arch/riscv/include/rpmi_msgprot.h:51:	RPMI_ERR_BAD_RANGE	= -11,
+core/arch/riscv/include/rpmi_msgprot.h:53:	RPMI_ERR_TIMEOUT	= -12,
+core/arch/riscv/include/rpmi_msgprot.h:59:	RPMI_ERR_IO		= -13,
+core/arch/riscv/include/rpmi_msgprot.h:61:	RPMI_ERR_NO_DATA	= -14,
+core/arch/riscv/include/rpmi_msgprot.h:62:	RPMI_ERR_RESERVED_START	= -15,
+core/arch/riscv/include/rpmi_msgprot.h:63:	RPMI_ERR_RESERVED_END	= -127,
+core/arch/riscv/include/rpmi_msgprot.h:64:	RPMI_ERR_VENDOR_START	= -128,
+core/arch/riscv/include/rpmi_msgprot.h:67:struct rpmi_reqfwd_retrieve_current_message_req {
+core/arch/riscv/include/rpmi_msgprot.h:71:struct rpmi_reqfwd_retrieve_current_message_resp {
+core/arch/riscv/include/rpmi_msgprot.h:76:	uint8_t request_message[RPMI_MSG_DATA_SIZE(RPMI_SLOT_SIZE_MIN) -
+core/arch/riscv/include/rpmi_msgprot.h:80:struct rpmi_reqfwd_complete_current_message_req {
+core/arch/riscv/include/rpmi_msgprot.h:81:	uint8_t response_data[RPMI_MSG_DATA_SIZE(RPMI_SLOT_SIZE_MIN)];
+core/arch/riscv/include/rpmi_msgprot.h:84:struct rpmi_reqfwd_complete_current_message_resp {
+core/arch/riscv/include/rpmi_msgprot.h:88:/** RPMI Request Forward ServiceGroup Service IDs */
+core/arch/riscv/include/rpmi_msgprot.h:89:enum rpmi_reqfwd_service_id {
+core/arch/riscv/include/rpmi_msgprot.h:90:	RPMI_REQFWD_SRV_ENABLE_NOTIFICATION = 0x01,
+core/arch/riscv/include/rpmi_msgprot.h:91:	RPMI_REQFWD_SRV_RETRIEVE_CURRENT_MESSAGE = 0x02,
+core/arch/riscv/include/rpmi_msgprot.h:92:	RPMI_REQFWD_SRV_COMPLETE_CURRENT_MESSAGE = 0x03,
+core/arch/riscv/include/rpmi_msgprot.h:93:	RPMI_REQFWD_SRV_MAX_COUNT,
+core/arch/riscv/include/rpmi_msgprot.h:96:#endif  /* __RPMI_MSGPROT_H__ */
+core/arch/riscv/include/sbi.h:27:#define SBI_EXT_MPXY			0x4D505859
+core/arch/riscv/include/sbi.h:102:enum sbi_ext_mpxy_fid {
+$ git -C custom/optee-os grep -n -E 'SBI_EXT_[A-Z_]+' -- core/arch/riscv
+core/arch/riscv/include/sbi.h:24:#define SBI_EXT_BASE			0x10
+core/arch/riscv/include/sbi.h:25:#define SBI_EXT_HSM			0x48534D
+core/arch/riscv/include/sbi.h:26:#define SBI_EXT_DBCN			0x4442434E
+core/arch/riscv/include/sbi.h:27:#define SBI_EXT_MPXY			0x4D505859
+core/arch/riscv/include/sbi.h:68:	SBI_EXT_BASE_GET_SPEC_VERSION = 0,
+core/arch/riscv/include/sbi.h:69:	SBI_EXT_BASE_GET_IMP_ID,
+core/arch/riscv/include/sbi.h:70:	SBI_EXT_BASE_GET_IMP_VERSION,
+core/arch/riscv/include/sbi.h:71:	SBI_EXT_BASE_PROBE_EXT,
+core/arch/riscv/include/sbi.h:72:	SBI_EXT_BASE_GET_MVENDORID,
+core/arch/riscv/include/sbi.h:73:	SBI_EXT_BASE_GET_MARCHID,
+core/arch/riscv/include/sbi.h:74:	SBI_EXT_BASE_GET_MIMPID,
+core/arch/riscv/include/sbi.h:79:	SBI_EXT_HSM_HART_START = 0,
+core/arch/riscv/include/sbi.h:80:	SBI_EXT_HSM_HART_STOP,
+core/arch/riscv/include/sbi.h:81:	SBI_EXT_HSM_HART_GET_STATUS,
+core/arch/riscv/include/sbi.h:82:	SBI_EXT_HSM_HART_SUSPEND,
+core/arch/riscv/include/sbi.h:87:	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
+core/arch/riscv/include/sbi.h:88:	SBI_EXT_DBCN_CONSOLE_READ = 1,
+core/arch/riscv/include/sbi.h:89:	SBI_EXT_DBCN_CONSOLE_WRITE_BYTE = 2,
+core/arch/riscv/include/sbi.h:103:	SBI_EXT_MPXY_GET_SHMEM_SIZE,
+core/arch/riscv/include/sbi.h:104:	SBI_EXT_MPXY_SET_SHMEM,
+core/arch/riscv/include/sbi.h:105:	SBI_EXT_MPXY_GET_CHANNEL_IDS,
+core/arch/riscv/include/sbi.h:106:	SBI_EXT_MPXY_READ_ATTRS,
+core/arch/riscv/include/sbi.h:107:	SBI_EXT_MPXY_WRITE_ATTRS,
+core/arch/riscv/include/sbi.h:108:	SBI_EXT_MPXY_SEND_MSG_WITH_RESP,
+core/arch/riscv/include/sbi.h:109:	SBI_EXT_MPXY_SEND_MSG_WITHOUT_RESP,
+core/arch/riscv/include/sbi.h:110:	SBI_EXT_MPXY_GET_NOTIFICATION_EVENTS,
+core/arch/riscv/kernel/sbi.c:19:	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, extid);
+core/arch/riscv/kernel/sbi.c:45:	ret = sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE_BYTE, ch);
+core/arch/riscv/kernel/sbi.c:62:	ret = sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_START, hartid, start_addr,
+core/arch/riscv/kernel/sbi.c:79:	ret = sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_GET_STATUS, hartid);
+core/arch/riscv/kernel/sbi_console.c:36:	if (sbi_probe_extension(SBI_EXT_DBCN))
+core/arch/riscv/kernel/sbi_mpxy.c:79:	ret = sbi_ecall(SBI_EXT_MPXY, SBI_EXT_MPXY_SET_SHMEM,
+core/arch/riscv/kernel/sbi_mpxy.c:114:	ret = sbi_ecall(SBI_EXT_MPXY, SBI_EXT_MPXY_READ_ATTRS,
+core/arch/riscv/kernel/sbi_mpxy.c:141:	ret = sbi_ecall(SBI_EXT_MPXY, SBI_EXT_MPXY_SEND_MSG_WITH_RESP,
+core/arch/riscv/kernel/sbi_mpxy.c:292:	if (!sbi_probe_extension(SBI_EXT_MPXY))
+
+--- B5 Linux: OP-TEE driver and MPXY
+$ ls output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee
+built-in.a
+call.c
+call.o
+core.c
+core.o
+device.c
+device.o
+ffa_abi.c
+Kconfig
+Makefile
+modules.order
+mpxy_sbi.c
+mpxy_sbi.o
+notif.c
+notif.o
+optee_ffa.h
+optee_msg.h
+optee_private.h
+optee_rpc_cmd.h
+optee_smc.h
+optee_trace.h
+rpc.c
+rpc.o
+smc_abi.c
+supp.c
+supp.o
+$ grep -rnI -i -E 'mpxy|rpmi|riscv' output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/built-in.a:9:mpxy_sbi.o/
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:1:savedcmd_drivers/tee/optee/call.o := <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/output/host/bin/riscv64-linux-gcc -Wp,-MMD,drivers/tee/optee/.call.o.d -nostdinc -I./arch/riscv/include -I./arch/riscv/include/generated -I./include -I./include -I./arch/riscv/include/uapi -I./arch/riscv/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/compiler-version.h -include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h -D__KERNEL__ -std=gnu11 -fshort-wchar -funsigned-char -fno-common -fno-PIE -fno-strict-aliasing -mabi=lp64 -march=rv64imac_zicsr_zifencei -mno-save-restore -mcmodel=medany -fno-asynchronous-unwind-tables -fno-unwind-tables -mno-riscv-attribute -Wa,-mno-arch-attr -mstrict-align -fno-delete-null-pointer-checks -O2 -fno-allow-store-data-races -fno-reorder-blocks -fno-ipa-cp-clone -fno-partial-inlining -fstack-protector-strong -fno-omit-frame-pointer -fno-optimize-sibling-calls -ftrivial-auto-var-init=zero -fno-stack-clash-protection -fmin-function-alignment=4 -fstrict-flex-arrays=3 -fno-strict-overflow -fno-stack-check -fconserve-stack -fno-builtin-wcslen -Wall -Wextra -Wundef -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Werror=strict-prototypes -Wno-format-security -Wno-trigraphs -Wno-frame-address -Wno-address-of-packed-member -Wmissing-declarations -Wmissing-prototypes -Wframe-larger-than=2048 -Wno-main -Wno-dangling-pointer -Wvla-larger-than=1 -Wno-pointer-sign -Wcast-function-type -Wno-array-bounds -Wno-stringop-overflow -Wno-alloc-size-larger-than -Wimplicit-fallthrough=5 -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wenum-conversion -Wunused -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-packed-not-aligned -Wno-format-overflow -Wno-format-truncation -Wno-stringop-truncation -Wno-override-init -Wno-missing-field-initializers -Wno-type-limits -Wno-shift-negative-value -Wno-maybe-uninitialized -Wno-sign-compare -Wno-unused-parameter -g -gdwarf-5 -Wno-attribute-alias -mstack-protector-guard=tls -mstack-protector-guard-reg=tp -mstack-protector-guard-offset=1152    -DKBUILD_MODFILE='"drivers/tee/optee/optee"' -DKBUILD_BASENAME='"call"' -DKBUILD_MODNAME='"optee"' -D__KBUILD_MODNAME=kmod_optee -c -o drivers/tee/optee/call.o drivers/tee/optee/call.c  
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:8:    $(wildcard include/config/RISCV) \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:65:  arch/riscv/include/generated/asm/rwonce.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:77:  arch/riscv/include/generated/uapi/asm/types.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:81:  arch/riscv/include/uapi/asm/bitsperlong.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:87:  arch/riscv/include/generated/uapi/asm/posix_types.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:107:  arch/riscv/include/generated/uapi/asm/param.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:115:  arch/riscv/include/generated/asm/spinlock_types.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:120:  arch/riscv/include/uapi/asm/byteorder.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:125:  arch/riscv/include/generated/uapi/asm/swab.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:220:  arch/riscv/include/asm/current.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:224:  arch/riscv/include/asm/bug.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:227:  arch/riscv/include/asm/asm.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:254:  arch/riscv/include/asm/linkage.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:255:  arch/riscv/include/asm/processor.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:256:    $(wildcard include/config/RISCV_ISA_ZICBOP) \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:257:    $(wildcard include/config/RISCV_ISA_V) \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:258:    $(wildcard include/config/RISCV_ISA_SUPM) \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:264:  arch/riscv/include/asm/cache.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:265:    $(wildcard include/config/RISCV_DMA_NONCOHERENT) \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:268:  arch/riscv/include/asm/vdso/processor.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:269:  arch/riscv/include/asm/barrier.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:270:    $(wildcard include/config/RISCV_ISA_ZAWRS) \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:271:  arch/riscv/include/asm/cmpxchg.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:272:    $(wildcard include/config/RISCV_ISA_ZABHA) \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:273:    $(wildcard include/config/RISCV_ISA_ZACAS) \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:274:  arch/riscv/include/asm/alternative-macros.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:275:    $(wildcard include/config/RISCV_ALTERNATIVE) \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:279:  arch/riscv/include/asm/fence.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:280:  arch/riscv/include/asm/hwcap.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:281:    $(wildcard include/config/RISCV_M_MODE) \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:282:  arch/riscv/include/uapi/asm/hwcap.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:283:  arch/riscv/include/asm/insn-def.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:285:  arch/riscv/include/asm/cpufeature-macros.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:287:  arch/riscv/include/asm/ptrace.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:288:  arch/riscv/include/uapi/asm/ptrace.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:289:  arch/riscv/include/asm/csr.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:298:  arch/riscv/include/generated/uapi/asm/errno.h \
+output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/tee/optee/.call.o.cmd:304:  arch/riscv/include/asm/bitops.h \
+(no match / rc=141)
+$ ls output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/mailbox output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/drivers/firmware 2>/dev/null | grep -iE 'mpxy|rpmi'
+riscv-sbi-mpxy-mbox.c
+riscv-sbi-mpxy-mbox.o
+$ grep -E '^CONFIG_(TEE|OPTEE[A-Z_]*|RISCV_SBI[A-Z_]*|MAILBOX|RISCV_SBI_MPXY[A-Z_]*|[A-Z_]*RPMI[A-Z_]*)=' output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987/.config
+CONFIG_RISCV_SBI=y
+CONFIG_RISCV_SBI_CPUIDLE=y
+CONFIG_COMMON_CLK_RPMI=y
+CONFIG_MAILBOX=y
+CONFIG_RISCV_SBI_MPXY_MBOX=y
+CONFIG_RISCV_RPMI_SYSMSI=y
+CONFIG_TEE=y
+CONFIG_OPTEE=y
+
+===== C. Boot chain =====
+
+--- C1 u-boot.itb (FIT) without payload data (full: logs/gate04/gate04_u-boot.itb.layout_20261107-104416.dts)
+/dts-v1/;
+
+/ {
+	timestamp = <0x6aedc457>;
+	description = "Configuration to load OpenSBI before U-Boot";
+	#address-cells = <0x02>;
+
+	images {
+
+		uboot {
+			description = "U-Boot";
+			type = "standalone";
+			os = "U-Boot";
+			arch = "riscv";
+			compression = "none";
+			load = <0x00 0x81200000>;
+		};
+
+		tee {
+			description = "OP-TEE";
+			type = "tee";
+			arch = "riscv";
+			compression = "none";
+			os = "tee";
+			load = <0x00 0xf1000000>;
+		};
+
+		opensbi {
+			description = "OpenSBI fw_dynamic Firmware";
+			type = "firmware";
+			os = "opensbi";
+			arch = "riscv";
+			compression = "none";
+			load = <0x00 0x80100000>;
+			entry = <0x00 0x80100000>;
+		};
+	};
+
+	configurations {
+		default = "conf-1";
+
+		conf-1 {
+			description = "NAME";
+			firmware = "opensbi";
+			loadables = "uboot", "tee";
+		};
+	};
+};
+
+--- C2 U-Boot configuration (SPL, OpenSBI, OP-TEE)
+$ grep -E '^CONFIG_(SPL_OPENSBI[A-Z_]*|SPL_OPTEE[A-Z_]*|OPTEE[A-Z_]*|TEE|SPL_LOAD_FIT[A-Z_]*|TEXT_BASE|SPL_TEXT_BASE|SPL_RAM_DEVICE|RISCV_SMODE|SPL_RISCV_MMODE|DEFAULT_DEVICE_TREE)=' output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/.config
+CONFIG_TEXT_BASE=0x81200000
+CONFIG_DEFAULT_DEVICE_TREE="qemu-virt64"
+CONFIG_SPL_TEXT_BASE=0x80000000
+CONFIG_SPL_OPENSBI_LOAD_ADDR=0x80100000
+CONFIG_RISCV_SMODE=y
+CONFIG_SPL_RISCV_MMODE=y
+CONFIG_SPL_OPTEE_LOAD_ADDR=0xf1000000
+CONFIG_SPL_LOAD_FIT=y
+CONFIG_SPL_LOAD_FIT_ADDRESS=0x80200000
+CONFIG_SPL_RAM_DEVICE=y
+CONFIG_SPL_OPENSBI=y
+CONFIG_SPL_OPENSBI_SCRATCH_OPTIONS=0x0
+CONFIG_TEE=y
+CONFIG_OPTEE=y
+CONFIG_OPTEE_TA_AVB=y
+CONFIG_OPTEE_SERVICE_DISCOVERY=y
+
+--- C3 OP-TEE build configuration (memory layout, cores, RISC-V options)
+$ grep -hE '^(PLATFORM|PLATFORM_FLAVOR|CFG_(TDDRAM|TEE_RAM|TZDRAM|SHMEM|TEE_SHMEM|CORE_RESERVED_SHM|TEE_CORE_NB_CORE|NUM_THREADS|CORE_ASLR|RISCV[A-Z_]*|16550_UART|SEMIHOSTING[A-Z_]*|DT|EXTERNAL_DT|TEE_CORE_LOG_LEVEL)[A-Z_]*)[[:space:]]*:?=' output/build/optee-os-custom/out/conf.mk | sort -u
+CFG_16550_UART=n
+CFG_CORE_ASLR=y
+CFG_CORE_RESERVED_SHM=n
+CFG_DTB_MAX_SIZE=0x10000
+CFG_DT_CACHED_NODE_INFO=n
+CFG_DT_DRIVER_EMBEDDED_TEST=n
+CFG_DT=y
+CFG_EXTERNAL_DTB_OVERLAY=n
+CFG_EXTERNAL_DT=y
+CFG_NUM_THREADS=2
+CFG_RISCV_APLIC_MSI=n
+CFG_RISCV_APLIC=n
+CFG_RISCV_FPU=y
+CFG_RISCV_IMSIC=n
+CFG_RISCV_ISA_C=y
+CFG_RISCV_M_MODE=n
+CFG_RISCV_MMU_MODE=39
+CFG_RISCV_MTIME_RATE=10000000
+CFG_RISCV_PLIC=n
+CFG_RISCV_SBI_CONSOLE=n
+CFG_RISCV_SBI=y
+CFG_RISCV_S_MODE=y
+CFG_RISCV_TIME_SOURCE_RDTIME=y
+CFG_RISCV_WITH_M_MODE_SM=y
+CFG_RISCV_ZKR_RNG=y
+CFG_SEMIHOSTING_CONSOLE_FILE=NULL
+CFG_SEMIHOSTING_CONSOLE=y
+CFG_SEMIHOSTING=y
+CFG_TDDRAM_SIZE=0x01000000
+CFG_TDDRAM_START=0xF1000000
+CFG_TEE_CORE_LOG_LEVEL=4
+CFG_TEE_CORE_NB_CORE=2
+CFG_TEE_RAM_VA_SIZE=0x00200000
+PLATFORM_FLAVOR=
+PLATFORM=virt
+
+===== D. Interrupts in OP-TEE (RISC-V) =====
+$ git -C custom/optee-os grep -n -i -E 'foreign|native_intr|interrupt' -- core/arch/riscv/kernel
+core/arch/riscv/kernel/boot.c:130:	 * asserts that the foreign interrupts are blocked when using most of
+core/arch/riscv/kernel/boot.c:278:	 * asserts that the foreign interrupts are blocked when using most of
+core/arch/riscv/kernel/kern.ld.S:27: * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+core/arch/riscv/kernel/thread_arch.c:17:#include <kernel/interrupt.h>
+core/arch/riscv/kernel/thread_arch.c:55:	/* Foreign interrupts must not be unmasked while holding a spinlock */
+core/arch/riscv/kernel/thread_arch.c:56:	if (!(exceptions & THREAD_EXCP_FOREIGN_INTR))
+core/arch/riscv/kernel/thread_arch.c:62:	 * corresponding interrupt sources. To not modify the function of
+core/arch/riscv/kernel/thread_arch.c:126:	/* Enable native interrupts */
+core/arch/riscv/kernel/thread_arch.c:128:	thread_unmask_exceptions(state & ~THREAD_EXCP_NATIVE_INTR);
+core/arch/riscv/kernel/thread_arch.c:134:	/* Restore foreign interrupts which are disabled on exception entry */
+core/arch/riscv/kernel/thread_arch.c:135:	thread_restore_foreign_intr();
+core/arch/riscv/kernel/thread_arch.c:153:	interrupt_main_handler();
+core/arch/riscv/kernel/thread_arch.c:156:void thread_native_interrupt_handler(struct thread_ctx_regs *regs,
+core/arch/riscv/kernel/thread_arch.c:204:	/* Enable native interrupt */
+core/arch/riscv/kernel/thread_arch.c:205:	thread->regs.ie = THREAD_EXCP_NATIVE_INTR;
+core/arch/riscv/kernel/thread_arch.c:361:		if (threads[n].flags & THREAD_FLAGS_EXIT_ON_FOREIGN_INTR)
+core/arch/riscv/kernel/thread_arch.c:376:	 * Return from RPC to request service of a foreign interrupt must not
+core/arch/riscv/kernel/thread_arch.c:445:		if (threads[ct].flags & THREAD_FLAGS_EXIT_ON_FOREIGN_INTR)
+core/arch/riscv/kernel/thread_arch.c:536:	/* Read current interrupt masks */
+core/arch/riscv/kernel/thread_optee_abi.c:309:	uint32_t exceptions = thread_mask_exceptions(THREAD_EXCP_FOREIGN_INTR);
+core/arch/riscv/kernel/thread_optee_abi.c:351:	exceptions = thread_mask_exceptions(THREAD_EXCP_FOREIGN_INTR);
+core/arch/riscv/kernel/thread_optee_abi_rv.S:196:	jal	interrupt_main_handler
+core/arch/riscv/kernel/thread_rv.S:63:	/* MSB of cause differentiates between interrupts and exceptions */
+core/arch/riscv/kernel/thread_rv.S:66:interrupt_from_kernel:
+core/arch/riscv/kernel/thread_rv.S:88:	/* Mask all interrupts */
+core/arch/riscv/kernel/thread_rv.S:107:	 * Get interrupt code from XCAUSE and build XIP. For example, if the
+core/arch/riscv/kernel/thread_rv.S:108:	 * value of XCAUSE is 0x8000000000000005 (supervisor timer interrupt),
+core/arch/riscv/kernel/thread_rv.S:116:	 * Compare built XIP with THREAD_EXCP_FOREIGN_INTR. If XIP is one of
+core/arch/riscv/kernel/thread_rv.S:117:	 * THREAD_EXCP_FOREIGN_INTR, we call thread_foreign_interrupt_handler().
+core/arch/riscv/kernel/thread_rv.S:119:	li	a2, THREAD_EXCP_FOREIGN_INTR
+core/arch/riscv/kernel/thread_rv.S:121:	beqz	a2, native_interrupt_from_kernel
+core/arch/riscv/kernel/thread_rv.S:123:foreign_interrupt_from_kernel:
+core/arch/riscv/kernel/thread_rv.S:126:	 * Tail call thread_foreign_interrupt_handler(regs) since we will not
+core/arch/riscv/kernel/thread_rv.S:129:	tail	thread_foreign_interrupt_handler
+core/arch/riscv/kernel/thread_rv.S:131:native_interrupt_from_kernel:
+core/arch/riscv/kernel/thread_rv.S:141:	 * Call thread_native_interrupt_handler(regs, cause)
+core/arch/riscv/kernel/thread_rv.S:143:	call	thread_native_interrupt_handler
+core/arch/riscv/kernel/thread_rv.S:223:	/* Mask all interrupts */
+core/arch/riscv/kernel/thread_rv.S:286:	/* MSB of cause differentiates between interrupts and exceptions */
+core/arch/riscv/kernel/thread_rv.S:289:interrupt_from_user:
+
+===== E. The two warnings seen in G03 =====
+
+--- E1 U-Boot: 'OP-TEE api uid mismatch'
+location: drivers/tee/optee/core.c:828
+     798  	debug("optee: invalid \"method\" property: %s\n", method);
+     799  	return ERR_PTR(-EINVAL);
+     800  }
+     801  
+     802  static int optee_of_to_plat(struct udevice *dev)
+     803  {
+     804  	struct optee_pdata *pdata = dev_get_plat(dev);
+     805  
+     806  	pdata->invoke_fn = get_invoke_func(dev);
+     807  	if (IS_ERR(pdata->invoke_fn))
+     808  		return PTR_ERR(pdata->invoke_fn);
+     809  
+     810  	return 0;
+     811  }
+     812  
+     813  static int optee_bind(struct udevice *dev)
+     814  {
+     815  	if (IS_ENABLED(CONFIG_OPTEE_SERVICE_DISCOVERY))
+     816  		dev_or_flags(dev, DM_FLAG_PROBE_AFTER_BIND);
+     817  
+     818  	return 0;
+     819  }
+     820  
+     821  static int optee_probe(struct udevice *dev)
+     822  {
+     823  	struct optee_pdata *pdata = dev_get_plat(dev);
+     824  	u32 sec_caps;
+     825  	int ret;
+     826  
+     827  	if (!is_optee_api(pdata->invoke_fn)) {
+     828  		dev_err(dev, "OP-TEE api uid mismatch\n");
+     829  		return -ENOENT;
+     830  	}
+     831  
+     832  	print_os_revision(dev, pdata->invoke_fn);
+     833  
+$ grep -rnI -i -E 'riscv|sbi|mpxy|ecall|arm_smccc' output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:1:cmd_drivers/tee/optee/supplicant.o := <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/output/host/bin/riscv64-linux-gcc -Wp,-MD,drivers/tee/optee/.supplicant.o.d -nostdinc -isystem <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/output/host/opt/ext-toolchain/bin/../lib/gcc/riscv64-buildroot-linux-gnu/14.2.0/include -Iinclude    -I./arch/riscv/include -include ./include/linux/kconfig.h -I./dts/upstream/include  -D__KERNEL__ -D__UBOOT__ -Wall -Wstrict-prototypes -Wno-format-security -fno-builtin -ffreestanding -std=gnu11 -fshort-wchar -fno-strict-aliasing -fno-PIE -Os -fno-stack-protector -fno-delete-null-pointer-checks -Wno-pointer-sign -Wno-stringop-truncation -Wno-zero-length-bounds -Wno-array-bounds -Wno-stringop-overflow -Wno-maybe-uninitialized -fmacro-prefix-map=./= -gdwarf-4 -fstack-usage -Wno-format-nonliteral -Wno-address-of-packed-member -Wno-unused-but-set-variable -Werror=date-time -Wno-packed-not-aligned -ffixed-x3 -fpic -fno-common -ffunction-sections -fdata-sections -pipe -march=rv64imafdc_zicsr_zifencei -mabi=lp64d -mcmodel=medlow    -DKBUILD_BASENAME='"supplicant"'  -DKBUILD_MODNAME='"supplicant"' -c -o drivers/tee/optee/supplicant.o drivers/tee/optee/supplicant.c
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:37:  <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/output/host/opt/ext-toolchain/lib/gcc/riscv64-buildroot-linux-gnu/14.2.0/include/stdarg.h \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:56:  arch/riscv/include/asm/posix_types.h \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:57:  arch/riscv/include/asm/types.h \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:61:  <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/output/host/opt/ext-toolchain/lib/gcc/riscv64-buildroot-linux-gnu/14.2.0/include/stddef.h \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:62:  <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/output/host/opt/ext-toolchain/lib/gcc/riscv64-buildroot-linux-gnu/14.2.0/include/stdbool.h \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:75:  arch/riscv/include/asm/bitops.h \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:76:  arch/riscv/include/asm/system.h \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:77:  arch/riscv/include/asm/csr.h \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:78:    $(wildcard include/config/riscv/priv/1/9.h) \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:79:  arch/riscv/include/asm/asm.h \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:91:  arch/riscv/include/asm/string.h \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/.supplicant.o.cmd:111:  arch/riscv/include/asm/linkage.h \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_smc.h:19:	ARM_SMCCC_CALL_VAL(ARM_SMCCC_STD_CALL, ARM_SMCCC_SMC_32, \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_smc.h:20:			   ARM_SMCCC_OWNER_TRUSTED_OS, (func_num))
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_smc.h:22:	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, ARM_SMCCC_SMC_32, \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_smc.h:23:			   ARM_SMCCC_OWNER_TRUSTED_OS, (func_num))
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_smc.h:30:	ARM_SMCCC_CALL_VAL(OPTEE_SMC_FAST_CALL, SMCCC_SMC_32, \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_smc.h:56:	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, ARM_SMCCC_SMC_32, \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_smc.h:57:			   ARM_SMCCC_OWNER_TRUSTED_OS_END, \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_smc.h:68:	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, ARM_SMCCC_SMC_32, \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_smc.h:69:			   ARM_SMCCC_OWNER_TRUSTED_OS_END, \
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/Kconfig:4:	depends on ARM_SMCCC || SBI
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/core.c:47:			       struct arm_smccc_res *);
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/core.c:486:		struct arm_smccc_res res;
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/core.c:696:	struct arm_smccc_res res;
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/core.c:707:		struct arm_smccc_res smccc;
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/core.c:730:		struct arm_smccc_res smccc;
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/core.c:743:		struct arm_smccc_res smccc;
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/core.c:764:			    struct arm_smccc_res *res)
+(no match / rc=141)
+-- UID constants: U-Boot side --
+$ grep -rnI -E 'OPTEE_MSG_UID_[0-3]|OPTEE_MSG_OS_OPTEE_UUID_[0-3]' output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/include
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/core.c:700:	return res.a0 == OPTEE_MSG_UID_0 && res.a1 == OPTEE_MSG_UID_1 &&
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/core.c:701:	       res.a2 == OPTEE_MSG_UID_2 && res.a3 == OPTEE_MSG_UID_3;
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_msg.h:218: * Represented in 4 32-bit words in OPTEE_MSG_UID_0, OPTEE_MSG_UID_1,
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_msg.h:219: * OPTEE_MSG_UID_2, OPTEE_MSG_UID_3.
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_msg.h:221:#define OPTEE_MSG_UID_0			0x384fb3e0
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_msg.h:222:#define OPTEE_MSG_UID_1			0xe7f811e3
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_msg.h:223:#define OPTEE_MSG_UID_2			0xaf630002
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_msg.h:224:#define OPTEE_MSG_UID_3			0xa5d5c51b
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_msg.h:245:#define OPTEE_MSG_OS_OPTEE_UUID_0	0x486178e0
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_msg.h:246:#define OPTEE_MSG_OS_OPTEE_UUID_1	0xe7f811e3
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_msg.h:247:#define OPTEE_MSG_OS_OPTEE_UUID_2	0xbc5e0002
+output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd/drivers/tee/optee/optee_msg.h:248:#define OPTEE_MSG_OS_OPTEE_UUID_3	0xa5d5c51b
+-- UID constants: OP-TEE side --
+$ git -C custom/optee-os grep -n -E 'OPTEE_MSG_UID_[0-3]|OPTEE_MSG_OS_OPTEE_UUID_[0-3]' -- core
+core/arch/arm/tee/entry_fast.c:346:	args->a0 = OPTEE_MSG_UID_0;
+core/arch/arm/tee/entry_fast.c:347:	args->a1 = OPTEE_MSG_UID_1;
+core/arch/arm/tee/entry_fast.c:348:	args->a2 = OPTEE_MSG_UID_2;
+core/arch/arm/tee/entry_fast.c:349:	args->a3 = OPTEE_MSG_UID_3;
+core/arch/arm/tee/entry_fast.c:360:	args->a0 = OPTEE_MSG_OS_OPTEE_UUID_0;
+core/arch/arm/tee/entry_fast.c:361:	args->a1 = OPTEE_MSG_OS_OPTEE_UUID_1;
+core/arch/arm/tee/entry_fast.c:362:	args->a2 = OPTEE_MSG_OS_OPTEE_UUID_2;
+core/arch/arm/tee/entry_fast.c:363:	args->a3 = OPTEE_MSG_OS_OPTEE_UUID_3;
+core/arch/riscv/tee/entry_fast.c:291:	args->a0 = OPTEE_MSG_UID_0;
+core/arch/riscv/tee/entry_fast.c:292:	args->a1 = OPTEE_MSG_UID_1;
+core/arch/riscv/tee/entry_fast.c:293:	args->a2 = OPTEE_MSG_UID_2;
+core/arch/riscv/tee/entry_fast.c:294:	args->a3 = OPTEE_MSG_UID_3;
+(no match / rc=141)
+
+--- E2 OP-TEE: 'CPU node does not have 'reg' property'
+location: core/arch/riscv/kernel/boot.c:192
+     167  /* May be overridden in plat-$(PLATFORM)/main.c */
+     168  __weak void boot_primary_init_core_ids(void)
+     169  {
+     170  #ifdef CFG_DT
+     171  	const void *fdt = get_external_dt();
+     172  	const fdt32_t *reg = NULL;
+     173  	int cpu_offset = 0;
+     174  	int offset = 0;
+     175  	int len = 0;
+     176  	int i = 0;
+     177  
+     178  	offset = fdt_path_offset(fdt, "/cpus");
+     179  	if (offset < 0)
+     180  		panic("Failed to find /cpus node in the device tree");
+     181  
+     182  	fdt_for_each_subnode(cpu_offset, fdt, offset) {
+     183  		/*
+     184  		 * Assume all TEE cores are enabled. The "reg"
+     185  		 * property in the CPU node indicates the hart ID.
+     186  		 */
+     187  		if (fdt_get_status(fdt, cpu_offset) == DT_STATUS_DISABLED)
+     188  			continue;
+     189  
+     190  		reg = fdt_getprop(fdt, cpu_offset, "reg", &len);
+     191  		if (!reg) {
+     192  			EMSG("CPU node does not have 'reg' property");
+     193  			continue;
+     194  		}
+     195  
+     196  		assert(i < CFG_TEE_CORE_NB_CORE);
+     197  		hartids[i++] = fdt32_to_cpu(*reg);
+     198  	}
+     199  
+     200  	assert(i == CFG_TEE_CORE_NB_CORE);
+     201  #endif
+     202  }
+     203  
+     204  /* May be overridden in plat-$(PLATFORM)/main.c */
+
+===== 9. Summary =====
+Failed commands : 0   (searches without a match are results, not failures)
+Next            : upload logs/gate04/gate04_inspect_arch_20261107-104416.log, the .dts files next to it,
+                  and the .sha256 manifest

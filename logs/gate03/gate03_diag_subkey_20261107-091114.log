@@ -1,0 +1,49 @@
+
+===== 0. Meta =====
+Gate      : 03 diagnosis of xtest regression_1039 (read-only)
+Timestamp : 20261107-091114
+Script    : scripts/gate03_diag_subkey.sh  sha256=b17108e207ec45200d81dfe18e6e83b67fce66f625a741c4e64d872e5e10659f
+
+===== 1. RISE optee_os fork (custom/optee-os) =====
+$ git -C custom/optee-os log -1 --format='HEAD    %H %cs %s'
+HEAD    814978eb15b92c3b97255a8c000f44cd84aac008 2025-06-23 core: riscv: fix hartid at secondary hart entry point
+[rc=0]
+$ grep -E '^CFG_OPTEE_REVISION_(MAJOR|MINOR) ' custom/optee-os/mk/config.mk
+CFG_OPTEE_REVISION_MAJOR ?= 4
+CFG_OPTEE_REVISION_MINOR ?= 6
+[rc=0]
+keys/default_ta.pem : 4096 bit
+-- last commits that changed keys/default_ta.pem --
+$ git -C custom/optee-os log -3 --format='%h %cs %s' -- keys/default_ta.pem
+12fc37711 2023-05-31 keys: rename the default key to default.pem
+bc420748b 2015-09-09 TA as ELF + signature
+[rc=0]
+-- default keys inside the installed TA dev kit(s) --
+output/build/optee-os-custom/out/export-ta_rv64/keys/default_ta.pem              4096 bit
+output/build/optee-os-custom/out/export-ta_rv64/keys/default.pem                 4096 bit
+output/host/riscv64-buildroot-linux-gnu/sysroot/lib/optee/export-ta_rv64/keys/default_ta.pem 4096 bit
+output/host/riscv64-buildroot-linux-gnu/sysroot/lib/optee/export-ta_rv64/keys/default.pem 4096 bit
+
+===== 2. optee_test 4.6.0: pre-signed test subkeys (signed with the ROOT key) =====
+top_level_subkey.bin                             magic=ok        type=subkey        hash= 32 B  sig=256 B  => signed with RSA-2048
+mid_level_subkey.bin                             magic=ok        type=subkey        hash= 32 B  sig=256 B  => signed with RSA-2048
+identity_subkey2.bin                             magic=ok        type=subkey        hash= 32 B  sig=256 B  => signed with RSA-2048
+
+===== 3. TAs installed in the guest root filesystem =====
+5c206987-16a3-59cc-ab0f-64b9cfc9e758.ta          magic=ok        type=subkey        hash= 32 B  sig=256 B  => signed with RSA-2048
+a720ccbb-51da-417d-b82e-e5445d474a7a.ta          magic=ok        type=subkey        hash= 32 B  sig=256 B  => signed with RSA-2048
+8aaaf200-2450-11e4-abe2-0002a5d5c51b.ta          magic=ok        type=bootstrap TA  hash= 32 B  sig=512 B  => signed with RSA-4096
+(subkey-signed TAs start with the subkey chain; hello_world is signed directly with the build-time key)
+
+===== 4. Result =====
+optee_os default TA key          : RSA-4096
+root signature on the test subkey: RSA-2048
+[RESULT] MISMATCH CONFIRMED - the test subkeys of optee_test 4.6.0 were signed with an
+         RSA-2048 root key, but this optee_os embeds an RSA-4096 default key.
+         OP-TEE correctly rejects the chain (TEE_ERROR_SECURITY). This is a test-suite /
+         key version mismatch, not a defect of the RISC-V OP-TEE port.
+
+===== 9. Summary =====
+Failed commands : 0
+This script changed nothing.
+Next            : upload logs/gate03/gate03_diag_subkey_20261107-091114.log and its .sha256 manifest

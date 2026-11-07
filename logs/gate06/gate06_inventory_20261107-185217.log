@@ -1,0 +1,77 @@
+
+===== 0. Meta =====
+Gate        : 06-1 inventory and leak scan (read-only)
+Timestamp   : 20261107-185217
+Script      : scripts/gate06_inventory.sh  sha256=a5c1ddaefa1d61e9141845287ce3ec7dc220d077046a8bd98c12f18ff3d16aba
+
+===== 1. Candidates and exclusions =====
+excluded raw files   : 112 (never published)
+excluded checkpoints : 6 (never published)
+excluded gate06 logs : this gate's own logs are not scanned
+not scanned          : scripts/gate06_inventory.sh (the scanner contains the patterns by design; it is published)
+
+===== 2. Leak scan of the candidates =====
+candidates: 144 files, 110.3 MiB
+  as-run     14 files     0.21 MiB
+  dts         4 files     0.03 MiB
+  figure     11 files     0.82 MiB
+  list       17 files     0.05 MiB
+  log        70 files   108.88 MiB
+  record     11 files     0.12 MiB
+  script     17 files     0.22 MiB
+
+-- BLOCKER findings (must be 0) --
+  home      0
+  user      0
+  host      0
+  email     0
+  signed    18
+  secret    4
+  big100    0
+  logs/gate02/gate02_make_20261106-205938.log: signed=18
+      signed: host objects.githubusercontent.com param response-content-disposition
+      signed: host release-assets.githubusercontent.com param response-content-disposition
+  logs/gate03/as-run/gate03_console.py: secret=1
+  scripts/gate03_console.py: secret=1
+  scripts/gate05a_console.py: secret=1
+  scripts/gate05b_console.py: secret=1
+
+-- REVIEW findings (decide one by one) --
+  ipv4      0
+  ipv6      32
+  mac       0
+  ph_email  174
+  big50     0
+  logs/gate02/gate02_make_20261106-205938.log: ipv6=28, ph_email=34
+      ipv6: other (prefix 2001:...)
+      ipv6: other (prefix 2403:...)
+      ipv6: other (prefix 2606:...)
+      ipv6: other (prefix 2a01:...)
+  logs/gate02/gate02_memory_check_20261106-202026.log: ph_email=2
+  logs/gate02/gate02_memory_check_20261106-203412.log: ph_email=2
+  logs/gate05/gate05b_m2_make_20261107-142146.log: ph_email=3
+  logs/gate05/gate05b_m2_make_20261107-143028.log: ph_email=31
+  logs/gate05/gate05b_m3_make_20261107-145829.log: ph_email=34
+  logs/gate05/gate05c_m8_make_20261107-171201.log: ph_email=13
+  logs/gate05/gate05c_m8_make_20261107-172559.log: ph_email=21
+  logs/gate05/gate05c_v9_make_20261107-162748.log: ipv6=4, ph_email=34
+      ipv6: other (prefix 2606:...)
+
+-- INFO --
+  tz    38 occurrences in 13 files
+  ansi  43516 occurrences in 14 files
+
+SUMMARY blockers=22 review=206
+per-file list (path, bytes, sha256, class, counts): logs/gate06/gate06_candidates_20261107-185217.tsv
+
+===== 3. Repository settings =====
+[OK]   .gitignore contains work/
+[OK]   .gitignore contains logs/**/raw/
+[OK]   .gitignore contains logs/**/G*_checkpoint.md
+[INFO] the project directory is not a git repository yet
+[WARN] git global user.email: NOT a GitHub noreply address (value not shown)
+[INFO] git local user.email: not set
+
+===== 9. Summary =====
+This step is read-only. Findings are decided in G06-2 / G06-3.
+Next            : upload logs/gate06/gate06_inventory_20261107-185217.log, the .tsv next to it, and the .sha256 manifest

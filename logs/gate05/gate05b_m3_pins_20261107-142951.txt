@@ -1,0 +1,7 @@
+buildroot|buildroot|https://gitlab.com/riseproject/riscv-optee/buildroot.git|rp016_m3_virq_up_v1|f2e760efebf60feb95b39a780506d5b1b12e308a
+local.mk|BM_APP|https://gitlab.com/riseproject/riscv-optee/bm-app.git|rp016_m3_virq_v2|cad8639a1489bbff36ce04302aa2d726a77dba12
+local.mk|OPENSBI|https://gitlab.com/riseproject/riscv-optee/opensbi.git|rp016_m3_virq_up_v1|7ca03a0f3259af7e8d23fd04f378cf5d8a6cc98d
+local.mk|OPTEE_OS|https://gitlab.com/riseproject/riscv-optee/optee_os.git|rp016_m1|814978eb15b92c3b97255a8c000f44cd84aac008
+local.mk|QEMU|https://gitlab.com/riseproject/riscv-optee/qemu.git|rp016_m1|9c23f2a7b0b45277693a14074b1aaa827eecdb92
+defconfig|BR2_LINUX_KERNEL|https://gitlab.com/riseproject/riscv-optee/linux.git|rp016_m1|2912ca616fc806dbeeba2e1ac7a157e0843d6987
+defconfig|BR2_TARGET_UBOOT|https://gitlab.com/riseproject/riscv-optee/u-boot.git|rp016_m1|32bdb252fab83028768a269fb304b9356547ccbd

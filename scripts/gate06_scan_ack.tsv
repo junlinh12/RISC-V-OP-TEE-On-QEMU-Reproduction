@@ -1,0 +1,10 @@
+# Reviewed false positives of the G06 leak scan, bound to the file CONTENT (sha256).
+# A finding is acknowledged only if the sha256 matches and only for the listed categories (* = all).
+# Any change to a listed file changes its hash and re-opens the finding for review.
+# sha256	categories	reason
+df46eb9f55aa706f8c77dfbec077af19673192c50229cecbe8a8367b14513e9a	secret	gate03_console.py (also as-run copy): login-prompt regex (the word Password, then a colon) is code, not a secret
+3ec32a2507e41f86bf8ec9b1247e20980bf35fd40ce2149a86e8f6c935143a79	secret	gate05a_console.py: login-prompt regex (the word Password, then a colon) is code, not a secret
+6f6e8bbc2aefc7c045ce0f782bb0018d6eb71c1f8d61a1d643a5e6e147c3abc8	secret	gate05b_console.py: login-prompt regex (the word Password, then a colon) is code, not a secret
+a5c1ddaefa1d61e9141845287ce3ec7dc220d077046a8bd98c12f18ff3d16aba	*	gate06_inventory.sh v1 (as-run): the scanner contains its search patterns and test strings by design
+bc70733077fc2d0cf58c5d26a563e61335b53c55b00ed4bcbe70336847517754	*	gate06_inventory.sh v2 (as-run): the scanner contains its search patterns by design
+965ad9e231048b15a034fe0dc44fa56bc485ea71d00a30061d46a0568eec62e9	*	gate06_publish.sh v1 (as-run): the log cleaner contains its own search patterns (time-zone strings, URL queries) by design

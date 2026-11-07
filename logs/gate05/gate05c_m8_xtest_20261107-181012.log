@@ -1,0 +1,277 @@
+
+===== 0. Meta =====
+Gate        : 05c (m8: boot, optee_examples, full xtest - same driver as G03)
+Mode        : full
+Timestamp   : 20261107-181012
+ProjectRoot : <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction
+Script      : scripts/gate05c_xtest.sh  sha256=61542b2c39fe6e285dccc217216997e84e6eee74883ed54d49ca7bb47bcc6821
+Raw log     : logs/gate05/raw/gate05c_m8_xtest_20261107-181012.raw.log  (local only, not published)
+
+===== 1. Safety pre-checks =====
+[OK]   running as an unprivileged user (uid 1000)
+[OK]   Buildroot QEMU: QEMU emulator version 10.1.93
+[OK]   start-qemu.sh puts output/host/bin first in PATH
+[OK]   output/images/u-boot-spl
+[OK]   output/images/u-boot.itb
+[OK]   output/images/qemu_rv64_virt_domain.dtb
+[OK]   output/images/sdcard.img
+[OK]   output/images/start-qemu.sh
+[OK]   output/images/tee.bin
+[OK]   ports 64320 / 64321 / 2200 are free
+[OK]   Python 3.12.3
+[OK]   scripts/gate03_console.py  sha256=df46eb9f55aa706f8c77dfbec077af19673192c50229cecbe8a8367b14513e9a
+-- guest root filesystem (output/target) --
+[INFO] guest root account has no password (Buildroot default)
+[INFO] no SSH server in the guest (dropbear / sshd not installed); port 2200 leads nowhere
+[OK]   guest has /usr/bin/xtest
+[OK]   guest has /usr/sbin/tee-supplicant
+guest optee_example_* : optee_example_acipher optee_example_aes optee_example_hello_world optee_example_hotp optee_example_plugins optee_example_random optee_example_secure_storage 
+guest TEE init scripts: S30tee-supplicant 
+[OK]   start-qemu.sh uses sdcard.img (protected with -snapshot)
+[OK]   start-qemu.sh parses options: QEMU arguments go after '--'
+sdcard.img sha256 before: 5daca318f7b359494cb96c42334d54032dd3c99f2865443397ecb2762392d4db
+
+===== 2. Loopback-only launcher (upstream start-qemu.sh is not modified) =====
+[OK]   m8: CPU extended as in the official instructions: -cpu rv64,zkr=on,v=true,vlen=128,zvkned=on,zvkb=on 
+[OK]   launcher generated: output/images/start-qemu.loopback.sh (only the QEMU line differs: hostfwd, -cpu)
+-- diff start-qemu.sh -> start-qemu.loopback.sh --
+< ... hostfwd=tcp::2200-:22 ...
+> ... hostfwd=tcp:127.0.0.1:2200-:22 ...
+-- QEMU command line used (from the launcher) --
+qemu-system-riscv64 -M virt -cpu rv64,zkr=on,v=true,vlen=128,zvkned=on,zvkb=on -dtb qemu_rv64_virt_domain.dtb -m 4096 -smp 2 -semihosting-config enable=on,target=native -serial tcp:127.0.0.1:64320,server -bios u-boot-spl -device loader,file=u-boot.itb,addr=0x80200000 -device virtio-blk-device,drive=hd0 -drive format=raw,file=sdcard.img,id=hd0,if=none -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp:127.0.0.1:2200-:22 -nographic  ${EXTRA_ARGS} "$@"
+
+===== 3. Boot, optee_examples, xtest =====
+QEMU stdio (OP-TEE semihosting console) : logs/gate05/raw/gate05c_m8_qemu_stdio_20261107-181012.raw.log
+Guest UART (OpenSBI / U-Boot / Linux)   : logs/gate05/raw/gate05c_m8_console_20261107-181012.raw.log
+Timeouts: boot 900 s, command 300 s, xtest 10800 s
+[INFO] QEMU started (pid 3228383); waiting for 127.0.0.1:64320
+-- listening sockets of the guest (must be 127.0.0.1 only) --
+[OK]   port 64320 bound to 127.0.0.1:64320 
+[OK]   port 2200 bound to 127.0.0.1:2200 
+[OK]   QEMU pid 3228383: -snapshot active
+
+-- console driver --
+[18:10:13] connected to 127.0.0.1:64320 - QEMU starts the guest now
+[18:10:17] login prompt reached
+[18:10:17] logged in as root
+[18:10:17] run   uname: uname -a
+[18:10:17] done  uname: rc=0 (0 s)
+STEP uname rc=0
+[18:10:17] run   kernel_cmdline: cat /proc/cmdline
+[18:10:17] done  kernel_cmdline: rc=0 (0 s)
+STEP kernel_cmdline rc=0
+[18:10:17] run   tee_devices: ls -l /dev/tee*
+[18:10:17] done  tee_devices: rc=0 (0 s)
+STEP tee_devices rc=0
+[18:10:17] run   tee_supplicant: pidof tee-supplicant
+[18:10:17] done  tee_supplicant: rc=0 (0 s)
+STEP tee_supplicant rc=0
+[18:10:17] run   optee_driver: dmesg | grep -i optee
+[18:10:17] done  optee_driver: rc=0 (0 s)
+STEP optee_driver rc=0
+[18:10:17] run   example_hello_world: optee_example_hello_world
+[18:10:17] done  example_hello_world: rc=1 (0 s)
+STEP example_hello_world rc=1
+[18:10:17] run   example_random: optee_example_random
+[18:10:17] done  example_random: rc=1 (0 s)
+STEP example_random rc=1
+[18:10:17] run   example_aes: optee_example_aes
+[18:10:17] done  example_aes: rc=1 (0 s)
+STEP example_aes rc=1
+[18:10:17] run   example_hotp: optee_example_hotp
+[18:10:17] done  example_hotp: rc=1 (0 s)
+STEP example_hotp rc=1
+[18:10:17] run   example_secure_storage: optee_example_secure_storage
+[18:10:17] done  example_secure_storage: rc=1 (0 s)
+STEP example_secure_storage rc=1
+[18:10:17] run   xtest: xtest
+[18:10:17] xtest regression_1001 Core self tests
+[18:10:17] xtest regression_1002 PTA parameters
+[18:10:17] xtest regression_1003 Core internal read/write mutex
+[18:10:17] xtest regression_1004 Test User Crypt TA
+[18:10:17] xtest regression_1005 Many sessions
+[18:10:17] xtest regression_1006 Test Basic OS features
+[18:10:17] xtest regression_1007 Test Panic
+[18:10:17] xtest regression_1008 TEE internal client API
+[18:10:18] xtest regression_1009 TEE Wait
+[18:10:18] xtest regression_1010 Invalid memory access
+[18:10:18] xtest regression_1011 Test TA-to-TA features with User Crypt TA
+[18:10:18] xtest regression_1012 Test Single Instance Multi Session features with SIMS TA
+[18:10:18] xtest regression_1013 Test concurrency with concurrent TA
+[18:10:19] xtest regression_1015 FS hash-tree corner cases
+[18:10:19] xtest regression_1016 Test TA to TA transfers (in/out/inout memrefs on the stack)
+[18:10:19] xtest regression_1017 Test coalescing memrefs
+[18:10:19] xtest regression_1018 Test memref out of bounds
+[18:10:19] xtest regression_1019 Test dynamically linked TA
+[18:10:19] xtest regression_1020 Test lockdep algorithm
+[18:10:19] xtest regression_1021 Test panic context release
+[18:10:19] xtest regression_1022 Test dlopen()/dlsym()/dlclose() API
+[18:10:19] xtest regression_1023 Test ELF initialization (.init_array)
+[18:10:19] xtest regression_1025 Test memref NULL and/or 0 bytes size
+[18:10:19] xtest regression_1026 Session: public login
+[18:10:19] xtest regression_1027 Session: user login for current user
+[18:10:19] xtest regression_1028 Session: group login for current user's effective group
+[18:10:19] xtest regression_1029 Test __thread attribute
+[18:10:19] xtest regression_1030 Test dl_iterate_phdr()
+[18:10:19] xtest regression_1031 Test C++ features
+[18:10:19] xtest regression_1032 Register read-only shared memory
+[18:10:19] xtest regression_1033 Test the supplicant plugin framework
+[18:10:19] xtest regression_1034 Test loading a large TA
+[18:10:19] xtest regression_1036 Test PAuth (Pointer Authentication)
+[18:10:19] xtest regression_1037 Remote attestation
+[18:10:19] done  xtest: rc=139 (2 s)
+STEP xtest rc=139
+SUMMARY xtest_rc=139
+SUMMARY xtest_subtests=NOT_FOUND
+SUMMARY xtest_cases=NOT_FOUND
+SUMMARY xtest_failed_cases=regression_1004,regression_1005,regression_1006,regression_1007,regression_1008,regression_1009,regression_1010,regression_1011,regression_1012,regression_1013,regression_1016,regression_1017,regression_1018,regression_1019,regression_1021,regression_1022,regression_1023,regression_1025,regression_1026,regression_1029,regression_1030,regression_1031,regression_1033,regression_1034,regression_1036
+[18:10:19] poweroff
+[18:10:21] guest powered off
+SUMMARY failed_checks=8
+$ python3 scripts/gate03_console.py ...
+[rc=1]
+[NG]   console driver: a check or test failed (see SUMMARY / STEP lines)
+[OK]   QEMU exited by itself (exit status 0)
+[OK]   sdcard.img unchanged (5daca318f7b35949)
+
+===== 4. Boot evidence =====
+-- guest UART: boot chain --
+U-Boot SPL 2025.01 (Nov 07 2026 - 17:36:12 <TZ>)
+OpenSBI v1.8
+Platform Name               : riscv-virtio,qemu
+Firmware Base               : 0x80100000
+Domain0 Name                : root
+Domain1 Name                : trusted-domain
+Domain2 Name                : untrusted-domain
+U-Boot 2025.01 (Nov 07 2026 - 17:36:12 <TZ>)
+[    0.000000] Linux version 6.19.0-rc2 (<USER>@<HOST>) (riscv64-linux-gcc.br_real (Buildroot 2021.11-12449-g1bef613319) 14.2.0, GNU ld (GNU Binutils) 2.42) #1 SMP Sat Nov  7 17:49:36 <TZ> 2026
+[    0.365586] optee: probing for conduit method.
+[    0.366165] optee: Probed RPMI OP-TEE channel 0 (dedicated to hart0)
+[    0.366274] optee: Probed RPMI OP-TEE channel 1 (dedicated to hart1)
+[    0.368221] optee: revision 4.8
+[    0.370366] optee: dynamic shared memory is enabled
+[    0.381333] optee: initialized driver
+buildroot login: root
+[    0.365586] optee: probing for conduit method.
+[    0.366165] optee: Probed RPMI OP-TEE channel 0 (dedicated to hart0)
+[    0.366274] optee: Probed RPMI OP-TEE channel 1 (dedicated to hart1)
+[    0.368221] optee: revision 4.8
+[    0.370366] optee: dynamic shared memory is enabled
+[    0.381333] optee: initialized driver
+-- guest UART: OpenSBI domain report --
+Domain0 Name                : root
+Domain0 Boot HART           : 0
+Domain0 HARTs               : 0,1
+Domain0 Region00            : 0x0000000080140000-0x000000008015ffff M: (F,R,W) S/U: ()
+Domain0 Region01            : 0x0000000080100000-0x000000008013ffff M: (F,R,X) S/U: ()
+Domain0 Region02            : 0x0000000000100000-0x0000000000100fff M: (I,R,W) S/U: (R,W)
+Domain0 Region03            : 0x0000000010000000-0x0000000010000fff M: (I,R,W) S/U: (R,W)
+Domain0 Region04            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain0 Region05            : 0x000000000c400000-0x000000000c5fffff M: (I,R,W) S/U: (R,W)
+Domain0 Region06            : 0x000000000c000000-0x000000000c3fffff M: (I,R,W) S/U: (R,W)
+Domain0 Region07            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (R,W,X)
+Domain0 Next Address        : 0x0000000081200000
+Domain0 Next Arg1           : 0x0000000081299ce0
+Domain0 Next Mode           : S-mode
+Domain0 SysReset            : yes
+Domain0 SysSuspend          : yes
+Domain1 Name                : trusted-domain
+Domain1 Boot HART           : 0
+Domain1 HARTs               : 0*,1*
+Domain1 Region00            : 0x0000000080140000-0x000000008015ffff M: (F,R,W) S/U: ()
+Domain1 Region01            : 0x0000000080100000-0x000000008013ffff M: (F,R,X) S/U: ()
+Domain1 Region02            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain1 Region03            : 0x00000000f1100000-0x00000000f117ffff M: (R) S/U: (R)
+Domain1 Region04            : 0x00000000f1180000-0x00000000f11fffff M: (R,W) S/U: (R,W)
+Domain1 Region05            : 0x00000000f1000000-0x00000000f10fffff M: (R,X) S/U: (R,X)
+Domain1 Region06            : 0x0000000000000000-0xffffffffffffffff M: (R,W,X) S/U: (R,W,X)
+Domain1 Next Address        : 0x00000000f1000000
+Domain1 Next Arg1           : 0x0000000081299ce0
+Domain1 Next Mode           : S-mode
+Domain1 SysReset            : no
+Domain1 SysSuspend          : no
+Domain2 Name                : untrusted-domain
+Domain2 Boot HART           : 0
+Domain2 HARTs               : 0,1
+Domain2 Region00            : 0x0000000080140000-0x000000008015ffff M: (F,R,W) S/U: ()
+Domain2 Region01            : 0x0000000080100000-0x000000008013ffff M: (F,R,X) S/U: ()
+Domain2 Region02            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain2 Region03            : 0x00000000f1000000-0x00000000f1ffffff M: () S/U: ()
+Domain2 Region04            : 0x0000000000000000-0xffffffffffffffff M: (R,W,X) S/U: (R,W,X)
+Domain2 Next Address        : 0x0000000081200000
+Domain2 Next Arg1           : 0x0000000081299ce0
+Domain2 Next Mode           : S-mode
+Domain2 SysReset            : no
+Domain2 SysSuspend          : no
+-- QEMU stdio: OP-TEE semihosting console (key lines) --
+qemu-system-riscv64: -serial tcp:127.0.0.1:64320,server: info: QEMU waiting for connection on: disconnected:tcp:127.0.0.1:64320,server=on
+I/TC: OP-TEE version: Unknown_4.8 (gcc version 14.2.0 (Buildroot 2021.11-12449-g1bef613319)) #1 Sat Nov  7 08:18:17 UTC 2026 riscv
+I/TC: Primary CPU0 (hart0) initializing
+I/TC: Primary CPU0 (hart0) initialized
+I/TC: Secondary CPU1 (hart1) initializing
+I/TC: Secondary CPU1 (hart1) initialized
+-- QEMU stdio: core PMP regions reported by OP-TEE (RP022 M8) --
+I/TC: Core PMP regions for the OpenSBI domain device tree:
+I/TC:   text base = <0x0 0xf1000000>; order = <20>; r-x
+I/TC:   rodata base = <0x0 0xf1100000>; order = <19>; r--
+I/TC:   data base = <0x0 0xf1180000>; order = <19>; rw-
+-- guest UART: OpenSBI and Boot HART --
+OpenSBI v1.8
+Runtime SBI Version         : 3.0
+Boot HART ID                : 0
+
+===== 5. xtest results for the comparison with M1 =====
+-- totals --
+-- regression_1039 (failed in M1: subkey signatures vs. RSA-4096 default key) --
+(no result line found)
+-- regression_1049 (RP022 M8: core PMP data permissions) --
+(not present in this optee_test)
+-- cases reported as FAILED --
+  regression_1004 FAILED
+  regression_1005 FAILED
+  regression_1006 FAILED
+  regression_1007 FAILED
+  regression_1008.1 FAILED
+  regression_1008.2 FAILED
+  regression_1008 FAILED
+  regression_1009.1 FAILED
+  regression_1009.2 FAILED
+  regression_1009.3 FAILED
+  regression_1009.4 FAILED
+  regression_1009 FAILED
+  regression_1010.10 FAILED
+  regression_1010.11 FAILED
+  regression_1010.12 FAILED
+  regression_1010.13 FAILED
+  regression_1010.14 FAILED
+  regression_1010.15 FAILED
+  regression_1010.16 FAILED
+  regression_1010.17 FAILED
+  regression_1010.1 FAILED
+  regression_1010.2 FAILED
+  regression_1010.3 FAILED
+  regression_1010.4 FAILED
+  regression_1010.5 FAILED
+  regression_1010.6 FAILED
+  regression_1010.7 FAILED
+  regression_1010.8 FAILED
+  regression_1010.9 FAILED
+  regression_1010 FAILED
+  regression_1011 FAILED
+  regression_1012.1 FAILED
+  regression_1012 FAILED
+  regression_1013.1.10 FAILED
+  regression_1013.1.11 FAILED
+  regression_1013.1.12 FAILED
+  regression_1013.1.13 FAILED
+  regression_1013.1.14 FAILED
+  regression_1013.1.15 FAILED
+  regression_1013.1.16 FAILED
+QEMU stdio log : 7391 lines, 429509 bytes
+Console log    : 938 lines, 87443 bytes
+
+===== 9. Summary =====
+Mode            : full
+Failed checks   : 1
+Verdict         : 1 CHECK(S) FAILED - search this log for '[NG]' / 'rc=' / 'SUMMARY'
+Next            : upload logs/gate05/gate05c_m8_xtest_20261107-181012.log and its .sha256 manifest

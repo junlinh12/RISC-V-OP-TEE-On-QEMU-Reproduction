@@ -1,0 +1,87 @@
+
+===== 0. Meta =====
+Gate        : 06 leak scan (read-only)  mode: tree publish
+Ack list    : scripts/gate06_scan_ack.tsv  sha256=fc449e3d88086e996b82c44baedeb28a18c4f64a6913eedbda136088834a5ddb
+Timestamp   : 20261107-193605
+Script      : scripts/gate06_inventory.sh  sha256=71b3221d6f89eaba2be413476629d56dbcd1d78e3811106f48db499d87a3ce30
+
+===== 1. Files of the assembled tree 'publish' =====
+files in the tree    : 161
+raw logs in the tree : 0 (must be 0)
+checkpoints in tree  : 0 (must be 0)
+not scanned          : scripts/gate06_inventory.sh, scripts/gate06_publish.sh (they contain the patterns by design; both are published)
+
+===== 2. Leak scan of the candidates =====
+candidates: 159 files, 5.5 MiB
+  as-run     17 files     0.25 MiB
+  dts         4 files     0.03 MiB
+  figure      8 files     0.54 MiB
+  list       18 files     0.06 MiB
+  log        71 files     4.20 MiB
+  record     23 files     0.23 MiB
+  script     18 files     0.22 MiB
+
+-- BLOCKER findings (must be 0) --
+  home      0
+  user      0
+  host      0
+  email     0
+  signed    0
+  secret    0
+  big100    0
+  (none)
+
+-- REVIEW findings (decide one by one) --
+  ipv4      0
+  ipv6      0
+  mac       0
+  ph_email  178
+  big50     0
+  docs/known-limitations.ja.md: ph_email=1
+  docs/known-limitations.md: ph_email=1
+  logs/gate02/gate02_make_20261106-205938.log.gz: ph_email=34
+  logs/gate02/gate02_memory_check_20261106-202026.log: ph_email=2
+  logs/gate02/gate02_memory_check_20261106-203412.log: ph_email=2
+  logs/gate05/gate05b_m2_make_20261107-142146.log.gz: ph_email=3
+  logs/gate05/gate05b_m2_make_20261107-143028.log.gz: ph_email=31
+  logs/gate05/gate05b_m3_make_20261107-145829.log.gz: ph_email=34
+  logs/gate05/gate05c_m8_make_20261107-171201.log.gz: ph_email=13
+  logs/gate05/gate05c_m8_make_20261107-172559.log.gz: ph_email=21
+  logs/gate05/gate05c_v9_make_20261107-162748.log.gz: ph_email=34
+  README.ja.md: ph_email=1
+  README.md: ph_email=1
+
+-- ACKNOWLEDGED (reviewed false positives, bound to the file's sha256; not counted) --
+  logs/gate03/as-run/gate03_console.py: secret=1
+      reason: gate03_console.py (also as-run copy): login-prompt regex (the word Password, then a colon) is code, not a secret
+  logs/gate06/as-run/gate06_inventory.v1.sh: secret=1, ipv6=3, tz=3
+      reason: gate06_inventory.sh v1 (as-run): the scanner contains its search patterns and test strings by design
+  logs/gate06/as-run/gate06_inventory.v2.sh: secret=1, ipv6=3, tz=3
+      reason: gate06_inventory.sh v2 (as-run): the scanner contains its search patterns by design
+  logs/gate06/as-run/gate06_publish.v1.sh: ipv6=2, tz=3
+      reason: gate06_publish.sh v1 (as-run): the log cleaner contains its own search patterns (time-zone strings, URL queries) by design
+  scripts/gate03_console.py: secret=1
+      reason: gate03_console.py (also as-run copy): login-prompt regex (the word Password, then a colon) is code, not a secret
+  scripts/gate05a_console.py: secret=1
+      reason: gate05a_console.py: login-prompt regex (the word Password, then a colon) is code, not a secret
+  scripts/gate05b_console.py: secret=1
+      reason: gate05b_console.py: login-prompt regex (the word Password, then a colon) is code, not a secret
+
+-- INFO --
+  tz    0 occurrences in 0 files
+  ansi  0 occurrences in 0 files
+
+SUMMARY blockers=0 review=178
+per-file list (path, bytes, sha256, class, counts): logs/gate06/gate06_treescan_files_20261107-193605.tsv
+
+===== 3. Repository settings =====
+[OK]   .gitignore contains work/
+[OK]   .gitignore contains logs/**/raw/
+[OK]   .gitignore contains logs/**/G*_checkpoint.md
+[INFO] the project directory is not a git repository yet
+[WARN] git global user.email: NOT a GitHub noreply address (value not shown)
+[INFO] git local user.email: not set
+
+===== 9. Summary =====
+This step is read-only. Findings are decided in G06-2 / G06-3.
+Next            : upload logs/gate06/gate06_treescan_20261107-193605.log, the .tsv next to it, and the .sha256 manifest

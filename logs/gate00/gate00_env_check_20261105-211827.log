@@ -1,0 +1,111 @@
+
+===== 0. Meta =====
+Gate        : 00 (Host environment & compute-resource check)
+Timestamp   : 20261105-211827
+ProjectRoot : <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction
+
+===== 1. OS / Kernel =====
+$ . /etc/os-release && echo "${PRETTY_NAME}"
+Ubuntu 24.04.5 LTS
+$ uname -srm
+Linux 7.0.0-38-generic x86_64
+$ systemd-detect-virt || true
+none
+
+===== 2. CPU =====
+$ nproc
+20
+$ lscpu | grep -E "^(Architecture|Model name|CPU\(s\)|Thread\(s\) per core|Core\(s\) per socket|Socket\(s\)|Virtualization):"
+Architecture:                            x86_64
+CPU(s):                                  20
+Model name:                              Intel(R) Core(TM) Ultra 7 265K
+Thread(s) per core:                      1
+Core(s) per socket:                      20
+Socket(s):                               1
+Virtualization:                          VT-x
+
+===== 3. Memory =====
+$ free -h
+               total        used        free      shared  buff/cache   available
+Mem:            30Gi        20Gi       1.6Gi       3.5Gi        12Gi        10Gi
+Swap:          8.0Gi       5.7Gi       2.3Gi
+
+===== 4. Disk (filesystem of $HOME) =====
+$ df -hT "$HOME"
+Filesystem     Type  Size  Used Avail Use% Mounted on
+/dev/nvme0n1p2 ext4  915G  408G  461G  47% /
+$ df -i "$HOME"
+Filesystem       Inodes   IUsed    IFree IUse% Mounted on
+/dev/nvme0n1p2 60981248 4363579 56617669    8% /
+
+===== 5. Host tools =====
+[OK]   gcc                  gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+[OK]   g++                  g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+[OK]   make                 GNU Make 4.3
+[OK]   git                  git version 2.43.0
+[OK]   python3              Python 3.12.3
+[OK]   perl                 perl v5.38.2
+[OK]   cmake                cmake version 3.28.3
+[OK]   ninja                1.11.1
+[OK]   dtc                  Version: DTC 1.7.0
+[OK]   rsync                rsync  version 3.2.7  protocol version 31
+[OK]   bc                   bc 1.07.1
+[OK]   cpio                 cpio (GNU cpio) 2.15
+[OK]   unzip                UnZip 6.00 of 20 April 2009, by Debian. Original by Info-ZIP.
+[OK]   wget                 GNU Wget 1.21.4 built on linux-gnu.
+[OK]   file                 file-5.45
+[OK]   patch                GNU patch 2.7.6
+[OK]   gzip                 gzip 1.12
+[OK]   bzip2                (installed)
+[OK]   tar                  tar (GNU tar) 1.35
+[OK]   flex                 flex 2.6.4
+[OK]   bison                bison (GNU Bison) 3.8.2
+[OK]   pkg-config           1.8.1
+[OK]   telnet               (installed)
+[OK]   qemu-system-riscv64  QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)
+
+===== 6. Debian packages =====
+[OK]   build-essential
+[OK]   git
+[OK]   rsync
+[OK]   bc
+[OK]   cpio
+[OK]   unzip
+[OK]   wget
+[OK]   file
+[OK]   patch
+[OK]   perl
+[OK]   python3
+[OK]   libncurses-dev
+[OK]   libssl-dev
+[OK]   device-tree-compiler
+[OK]   telnet
+[OK]   inetutils-telnet
+
+===== 7. Buildroot sanity (environment) =====
+[OK]   PATH has no empty/'.' entry
+[OK]   PATH has no whitespace
+[OK]   LD_LIBRARY_PATH not set
+[OK]   PERL_MM_OPT not set
+[OK]   build dir path (work/) has no whitespace
+umask       : 0002
+LANG        : en_US.UTF-8
+ulimit -n   : 1024
+
+===== 8. QEMU console ports (64320 / 64321) =====
+[OK]   ports 64320 / 64321 are free
+
+===== 9. Git identity (privacy check before GitHub upload) =====
+[WARN] git user.email is NOT a noreply address (value not shown)
+
+===== 10. Existing projects under ~/projects =====
+IBM-ACE-On-QEMU-Reproduction
+lattice-enclave-qemu-reproduction
+lattice-enclave-riscv-implementation
+MAIN_TASK.md
+RISC-V-OP-TEE-On-QEMU-Reproduction
+
+===== 11. Resource summary =====
+[OK] CPU threads : 20  (>=8 recommended; fewer only means slower)
+[OK] RAM (GiB)   : 31  (>=15 recommended, >=8 minimum)
+[OK] Free disk   : 461 GiB on $HOME  (>=50 recommended, >=30 minimum)

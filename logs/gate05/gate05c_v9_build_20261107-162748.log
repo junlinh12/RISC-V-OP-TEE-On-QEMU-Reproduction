@@ -1,0 +1,195 @@
+
+===== 0. Meta =====
+Gate        : 05c build (v9: dev-optee-mpxy-v9, own tree)
+Mode        : full
+Timestamp   : 20261107-162748
+Script      : scripts/gate05b_build.sh  sha256=44ca1e26eff88cf1bd03f72abcaed543541c06fd099077a8caf279d19ca0fed7
+
+===== 1. Pre-checks =====
+[OK]   MemAvailable 16 GiB
+[OK]   free disk 386 GiB
+[OK]   M1 reference tree present (it is not modified by this script)
+Target   : v9   branch dev-optee-mpxy-v9   pinned b5e20ca925d0784473c854fae92c3fc5931802ee
+Tree     : work/buildroot-v9
+BR2_DL_DIR: work/dl-g05
+Jobs     : make -j2, BR2_JLEVEL=2 (set G05B_JOBS to change)
+
+===== 2. Buildroot tree (pinned) =====
+[OK]   remote dev-optee-mpxy-v9 tip = pinned commit
+$ git -C '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-v9' fetch --quiet origin
+[rc=0]
+$ git checkout --quiet -B 'dev-optee-mpxy-v9' 'b5e20ca925d0784473c854fae92c3fc5931802ee'
+[rc=0]
+[OK]   HEAD b5e20ca925d0784473c854fae92c3fc5931802ee
+$ git log -1 --format='%cs %s'
+2026-06-11 defconfig: include optee_os and opensbi commits
+[rc=0]
+
+===== 3. Shared download directory (hard links to M1 tarballs, git caches excluded) =====
+[OK]   work/dl-g05 exists (21487 files) - not re-seeded
+
+===== 4. Components (read from local.mk and the defconfig, resolved to SHAs) =====
+-- local.mk lines that define the overrides (for the record) --
+(no local.mk)
+-- local.mk overrides --
+-- defconfig custom git repos --
+-- defconfig custom tarballs (must be pinned by a commit SHA in the URL) --
+[OK]   BR2_LINUX_KERNEL     tarball at commit 9007f552b318522b0b36c78b838f70d9dd604d80
+         https://gitlab.com/riseproject/riscv-optee/linux/-/archive/9007f552b318522b0b36c78b838f70d9dd604d80/linux-dev-optee-mpxy-v9.tar.gz
+[OK]   BR2_TARGET_OPTEE_OS  tarball at commit f1d355401a3213d076f0332fd5d98c1cae05993b
+         https://gitlab.com/riseproject/riscv-optee/optee_os/-/archive/f1d355401a3213d076f0332fd5d98c1cae05993b/optee_os-dev-optee-mpxy-v9.tar.gz
+[OK]   BR2_TARGET_OPENSBI   tarball at commit a1cdb6f4c7f511e3d0d41fc89495aefbd559e0b7
+         https://gitlab.com/riseproject/riscv-optee/opensbi/-/archive/a1cdb6f4c7f511e3d0d41fc89495aefbd559e0b7/opensbi-dev-optee-mpxy-v9.tar.gz
+[OK]   BR2_TARGET_UBOOT     tarball at commit 32bdb252fab83028768a269fb304b9356547ccbd
+         https://gitlab.com/riseproject/riscv-optee/u-boot/-/archive/32bdb252fab83028768a269fb304b9356547ccbd/u-boot-dev-optee-mpxy-v5.tar.gz
+-- version-related defconfig lines (for the record) --
+11:BR2_LINUX_KERNEL_CUSTOM_TARBALL=y
+12:BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="https://gitlab.com/riseproject/riscv-optee/linux/-/archive/9007f552b318522b0b36c78b838f70d9dd604d80/linux-dev-optee-mpxy-v9.tar.gz"
+22:BR2_TARGET_OPTEE_OS_CUSTOM_TARBALL=y
+23:BR2_TARGET_OPTEE_OS_CUSTOM_TARBALL_LOCATION="https://gitlab.com/riseproject/riscv-optee/optee_os/-/archive/f1d355401a3213d076f0332fd5d98c1cae05993b/optee_os-dev-optee-mpxy-v9.tar.gz"
+29:BR2_TARGET_OPENSBI_CUSTOM_TARBALL=y
+30:BR2_TARGET_OPENSBI_CUSTOM_TARBALL_LOCATION="https://gitlab.com/riseproject/riscv-optee/opensbi/-/archive/a1cdb6f4c7f511e3d0d41fc89495aefbd559e0b7/opensbi-dev-optee-mpxy-v9.tar.gz"
+34:BR2_TARGET_UBOOT_CUSTOM_TARBALL=y
+35:BR2_TARGET_UBOOT_CUSTOM_TARBALL_LOCATION="https://gitlab.com/riseproject/riscv-optee/u-boot/-/archive/32bdb252fab83028768a269fb304b9356547ccbd/u-boot-dev-optee-mpxy-v5.tar.gz"
+42:BR2_TARGET_UBOOT_FORMAT_CUSTOM_NAME="u-boot.itb"
+46:BR2_PACKAGE_HOST_QEMU=y
+47:BR2_PACKAGE_HOST_QEMU_SYSTEM_MODE=y
+pins written to logs/gate05/gate05c_v9_pins_20261107-162748.txt
+
+===== 5. Pin custom/ checkouts (local branch at the pinned SHA) =====
+
+===== 6. Configure (upstream defconfig + SHAs in .config) =====
+$ make -s qemu_riscv64_virt_optee_defconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-v9/.config
+#
+[rc=0]
+$ utils/config --file .config --set-val BR2_JLEVEL 2
+[rc=0]
+$ make -s olddefconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-v9/.config
+#
+[rc=0]
+[OK]   .config BR2_JLEVEL=2 (per-package parallel jobs)
+$ make -s --no-print-directory printvars VARS='LINUX_VERSION UBOOT_VERSION OPENSBI_VERSION OPTEE_OS_VERSION QEMU_VERSION OPTEE_TEST_VERSION'
+LINUX_VERSION=custom
+OPENSBI_VERSION=custom
+OPTEE_OS_VERSION=custom
+OPTEE_TEST_VERSION=4.9.0-rc1
+QEMU_VERSION=10.0.0
+UBOOT_VERSION=custom
+[rc=0]
+-- every override directory Buildroot will use must be one of the pinned checkouts --
+[INFO] Buildroot reports no override directories
+
+===== 7. Build (make -j2, BR2_JLEVEL=2) =====
+Full output: logs/gate05/raw/gate05c_v9_make_20261107-162748.raw.log (raw)  /  logs/gate05/gate05c_v9_make_20261107-162748.log (sanitized)
+$ make -j2
+[rc=0]
+Elapsed : 24 min 24 s
+[OK]   build finished
+
+===== 8. Verify the commits actually used =====
+[OK]   output/build/linux-custom (tarball at 9007f552b318)
+[OK]   output/build/optee-os-custom (tarball at f1d355401a32)
+[OK]   output/build/opensbi-custom (tarball at a1cdb6f4c7f5)
+[OK]   output/build/uboot-custom (tarball at 32bdb252fab8)
+
+===== 9. Artifacts and generated start scripts (input for the G05b-2 tests) =====
+$ ls -l output/images
+total 264500
+-rw-r--r-- 1 <USER> <USER>    276224 Nov  7 16:38 fw_dynamic.bin
+-rw-r--r-- 1 <USER> <USER>   2115088 Nov  7 16:38 fw_dynamic.elf
+-rw-r--r-- 1 <USER> <USER>    276184 Nov  7 16:38 fw_jump.bin
+-rw-r--r-- 1 <USER> <USER>   2114664 Nov  7 16:38 fw_jump.elf
+-rw-r--r-- 1 <USER> <USER>  27411456 Nov  7 16:52 Image
+-rwxr-xr-x 1 <USER> <USER>      6818 Nov  7 16:52 qemu_rv64_virt_domain.dtb
+-rw-r--r-- 1 <USER> <USER> 272629760 Nov  7 16:52 rootfs.ext2
+-rw-r--r-- 1 <USER> <USER>  76185600 Nov  7 16:52 rootfs.tar
+-rw-r--r-- 1 <USER> <USER> 272630272 Nov  7 16:52 sdcard.img
+-rwxr-xr-x 1 <USER> <USER>      1014 Nov  7 16:52 start-qemu.sh
+-rwxr-xr-x 1 <USER> <USER>    705072 Nov  7 16:33 tee.bin
+-rw-r--r-- 1 <USER> <USER>    635260 Nov  7 16:41 u-boot.bin
+-rw-r--r-- 1 <USER> <USER>   1613163 Nov  7 16:41 u-boot.itb
+-rwxr-xr-x 1 <USER> <USER>   1268488 Nov  7 16:41 u-boot-spl
+[rc=0]
+-- sha256 (start scripts excluded) --
+9c7d7caefd486ddbcbb9b5b0ed53cb44de2ff969b01f787439f7978064606303  fw_dynamic.bin
+6972fc5f9f672a9f38e95c05b8a129bfdac35b7b14f48a9db1948b706a9c5755  fw_dynamic.elf
+57410a77442eeac5811e64d42c60efa56457e04ebf47c679f1edd7987ef6b227  fw_jump.bin
+0d4ba7aa0770ecba262dc2bfa75bee7123b767b2e8cd042e794d16c330a62523  fw_jump.elf
+22445d288a5200ebb8683915cc4b8c46d04e3a97a9ae874122ae77301943ddf2  Image
+9ba3c97acae11ae93d1ce7bdd49aefdaeae4aac388a9111c205d19887fc81f86  qemu_rv64_virt_domain.dtb
+c56fd275df55d586997e73a9199f88c6fd94f5d558822b6c1c7ca7b8e292ca34  rootfs.ext2
+ac25f9e858ff1cee76e229d58bcabc588b7a7ed89daac1df66b754efbfe69242  rootfs.tar
+390a3ed90db053866ab721f4148052d021c41fa19c8c736215b656b5054f033f  sdcard.img
+89d5be6eaafb02deeeb427f69846e7876835b8349ccf892b891bf2e4f8701975  tee.bin
+773f1d2c6cc5411c8fab97d6aed526013b2c298852363b763845dd64f8f0d83f  u-boot.bin
+a09a5755b7625c6191e32745a77d503e2b74b14296628d6628e2c8b0a39a50a8  u-boot.itb
+2a5d86953278268f1248a2095b4e1d965abedc1dd9da11c713afecaf32fa9aee  u-boot-spl
+$ output/host/bin/qemu-system-riscv64 --version | head -n1
+QEMU emulator version 10.0.0
+[rc=0]
+
+----- output/images/start-qemu.sh -----
+#!/bin/sh
+
+BINARIES_DIR="${0%/*}/"
+# shellcheck disable=SC2164
+cd "${BINARIES_DIR}"
+
+mode_serial=false
+mode_sys_qemu=false
+while [ "$1" ]; do
+    case "$1" in
+    --serial-only|serial-only) mode_serial=true; shift;;
+    --use-system-qemu) mode_sys_qemu=true; shift;;
+    --) shift; break;;
+    *) echo "unknown option: $1" >&2; exit 1;;
+    esac
+done
+
+if ${mode_serial}; then
+    EXTRA_ARGS='-nographic'
+else
+    EXTRA_ARGS=''
+fi
+
+if ! ${mode_sys_qemu}; then
+    export PATH="<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-v9/output/host/bin:${PATH}"
+fi
+
+exec qemu-system-riscv64 -M virt -cpu rv64,zkr=on -dtb qemu_rv64_virt_domain.dtb -m 4096 -smp 2 -semihosting-config enable=on,target=native -serial tcp:127.0.0.1:64320,server -bios u-boot-spl -device loader,file=u-boot.itb,addr=0x80200000 -device virtio-blk-device,drive=hd0 -drive format=raw,file=sdcard.img,id=hd0,if=none -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp::2200-:22 -nographic  ${EXTRA_ARGS} "$@"
+
+-- device-tree sources / overlays shipped with the images --
+board/andes/ae350/rootfs_overlay
+board/arm/fvp-ebbr/fvp-ebbr.dts
+board/arrow/avenger96/overlay
+board/avnet/s6lx9_microboard/lx9_mmu.dts
+board/beagleboard/beaglebone/rootfs_overlay
+board/beagleboard/beaglev_fire/rootfs-overlay
+board/cubietech/cubieboard1/rootfs_overlay
+board/cubietech/cubieboard2/rootfs_overlay
+board/embest/riotboard/rootfs_overlay
+board/engicam/icorem6/rootfs_overlay
+board/freescale/imx6-sabresd/rootfs_overlay
+board/freescale/imx7dsdb/rootfs_overlay
+board/freescale/ls1028ardb/rootfs_overlay
+board/freescale/ls1043a-rdb/rootfs_overlay
+board/freescale/ls1046a-frwy/rootfs_overlay
+board/freescale/ls1046a-rdb/rootfs_overlay
+board/friendlyarm/nanopi-r3s/rootfs_overlay
+board/hardkernel/odroidc2/rootfs_overlay
+board/intel/galileo/rootfs_overlay
+board/kontron/smarc-sal28/rootfs_overlay
+$ du -sh output
+13G	output
+[rc=0]
+
+===== 10. Summary =====
+Target          : v9 (dev-optee-mpxy-v9 @ b5e20ca925d0)
+Mode            : full
+Failed checks   : 0
+Verdict         : BUILD COMPLETED AND VERIFIED
+Next            : upload logs/gate05/gate05c_v9_build_20261107-162748.log and its .sha256 manifest

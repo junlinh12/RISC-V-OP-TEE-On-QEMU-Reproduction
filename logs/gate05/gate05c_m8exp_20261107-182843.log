@@ -1,0 +1,82 @@
+
+===== 0. Meta =====
+Gate        : 05c M8 confirmation experiment (S/U-execute on the core data region only)
+Mode        : prepare-only
+Timestamp   : 20261107-182843
+ProjectRoot : <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction
+Script      : scripts/gate05c_m8_exp.sh  sha256=2f1636c969d1a38cd219c7eb1aa265cad0d2281999481ecc8a2f10272540d63c
+Raw log     : logs/gate05/raw/gate05c_m8exp_20261107-182843.raw.log  (local only, not published)
+
+===== 1. Safety pre-checks =====
+[OK]   running as an unprivileged user (uid 1000)
+[OK]   Buildroot QEMU: QEMU emulator version 10.1.93
+[OK]   start-qemu.sh puts output/host/bin first in PATH
+[OK]   output/images/u-boot-spl
+[OK]   output/images/u-boot.itb
+[OK]   output/images/qemu_rv64_virt_domain.dtb
+[OK]   output/images/sdcard.img
+[OK]   output/images/start-qemu.sh
+[OK]   output/images/tee.bin
+[OK]   ports 64320 / 64321 / 2200 are free
+[OK]   Python 3.12.3
+[OK]   scripts/gate03_console.py  sha256=df46eb9f55aa706f8c77dfbec077af19673192c50229cecbe8a8367b14513e9a
+-- guest root filesystem (output/target) --
+[INFO] guest root account has no password (Buildroot default)
+[INFO] no SSH server in the guest (dropbear / sshd not installed); port 2200 leads nowhere
+[OK]   guest has /usr/bin/xtest
+[OK]   guest has /usr/sbin/tee-supplicant
+guest optee_example_* : optee_example_acipher optee_example_aes optee_example_hello_world optee_example_hotp optee_example_plugins optee_example_random optee_example_secure_storage 
+guest TEE init scripts: S30tee-supplicant 
+[OK]   start-qemu.sh uses sdcard.img (protected with -snapshot)
+[OK]   start-qemu.sh parses options: QEMU arguments go after '--'
+sdcard.img sha256 before: 5daca318f7b359494cb96c42334d54032dd3c99f2865443397ecb2762392d4db
+
+===== 1b. Experimental domain DTB (S/U-execute added to the core data region only) =====
+[OK]   dtc: output/host/bin/dtc (Version: DTC 1.7.2-g52f07dcc)
+[OK]   scripts/gate05c_dt_grant_exec.py  sha256=b152e3cdb0b6558eac0f337f4167b0ff5e4a76cc9799c6d696a6e9502c55ccdc
+$ '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/host/bin/dtc' -q -I dtb -O dts -o '/tmp/tmp.e74HDHvY5K/orig.dts' '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/images/qemu_rv64_virt_domain.dtb'
+[rc=0]
+$ python3 '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/scripts/gate05c_dt_grant_exec.py' --dts-in '/tmp/tmp.e74HDHvY5K/orig.dts' --dts-out '/tmp/tmp.e74HDHvY5K/exp.dts' --sbi-domain-h '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/custom/opensbi/include/sbi/sbi_domain.h' --domain trusted-domain --base 0xf1180000
+permission bits from sbi_domain.h: M_READABLE=0x01, M_WRITABLE=0x02, M_EXECUTABLE=0x04, SU_READABLE=0x08, SU_WRITABLE=0x10, SU_EXECUTABLE=0x20
+memregions in the device tree:
+  tcore-text               base 0x00f1000000  order 20  size 0x100000  phandle 0x4
+  tcore-rodata             base 0x00f1100000  order 19  size 0x80000  phandle 0x7
+  tcore-data               base 0x00f1180000  order 19  size 0x80000  phandle 0x8
+  tmem                     base 0x00f1000000  order 24  size 0x1000000  phandle 0xa
+  allmem                   base 0x0000000000  order 64  size 0x10000000000000000  phandle 0x9
+regions of 'trusted-domain' before the change:
+  phandle 0x4 tcore-text           0x00f1000000/20  perm 0x2d  M: (R,X) S/U: (R,X)
+  phandle 0x7 tcore-rodata         0x00f1100000/19  perm 0x09  M: (R) S/U: (R)
+  phandle 0x8 tcore-data           0x00f1180000/19  perm 0x1b  M: (R,W) S/U: (R,W)
+  phandle 0x9 allmem               0x0000000000/64  perm 0x3f  M: (R,W,X) S/U: (R,W,X)
+[OK]   tcore-data (base 0xf1180000, order 19): 0x1b M: (R,W) S/U: (R,W)  ->  0x3b M: (R,W) S/U: (R,W,X)
+[OK]   written /tmp/tmp.e74HDHvY5K/exp.dts (only the regions line of 'trusted-domain' differs)
+[rc=0]
+$ '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/host/bin/dtc' -q -I dts -O dtb -o '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/images/qemu_rv64_virt_domain.exp-data-x.dtb' '/tmp/tmp.e74HDHvY5K/exp.dts'
+[rc=0]
+$ '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/host/bin/dtc' -q -I dtb -O dts -o '/tmp/tmp.e74HDHvY5K/check.dts' '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/images/qemu_rv64_virt_domain.exp-data-x.dtb'
+[rc=0]
+-- diff original DTB -> experimental DTB (both decompiled) --
+< 				regions = <0x04 0x2d 0x07 0x09 0x08 0x1b 0x09 0x3f>;
+> 				regions = <0x04 0x2d 0x07 0x09 0x08 0x3b 0x09 0x3f>;
+[OK]   output/images/qemu_rv64_virt_domain.exp-data-x.dtb: exactly one line (the trusted-domain regions property) differs
+fe6b70f1e9c516d9589fca267c2cd2dec5873b183214ad7e802c9b846b5b093f  output/images/qemu_rv64_virt_domain.dtb
+1931e5655778508bc1ee0dc471c182e9d96d368b5bd616ed4e8868ff6176040a  output/images/qemu_rv64_virt_domain.exp-data-x.dtb
+
+===== 2. Loopback-only launcher (upstream start-qemu.sh is not modified) =====
+[OK]   m8: CPU extended as in the official instructions: -cpu rv64,zkr=on,v=true,vlen=128,zvkned=on,zvkb=on 
+[OK]   experiment: QEMU gets -dtb qemu_rv64_virt_domain.exp-data-x.dtb (the original DTB is not modified)
+[OK]   launcher generated: output/images/start-qemu.loopback.sh (only the QEMU line differs: hostfwd, -cpu, -dtb)
+-- diff start-qemu.sh -> start-qemu.loopback.sh --
+< ... hostfwd=tcp::2200-:22 ...
+> ... hostfwd=tcp:127.0.0.1:2200-:22 ...
+-- QEMU command line used (from the launcher) --
+qemu-system-riscv64 -M virt -cpu rv64,zkr=on,v=true,vlen=128,zvkned=on,zvkb=on -dtb qemu_rv64_virt_domain.exp-data-x.dtb -m 4096 -smp 2 -semihosting-config enable=on,target=native -serial tcp:127.0.0.1:64320,server -bios u-boot-spl -device loader,file=u-boot.itb,addr=0x80200000 -device virtio-blk-device,drive=hd0 -drive format=raw,file=sdcard.img,id=hd0,if=none -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp:127.0.0.1:2200-:22 -nographic  ${EXTRA_ARGS} "$@"
+
+[INFO] --prepare-only: QEMU was not started
+
+===== 9. Summary =====
+Mode            : prepare-only
+Failed checks   : 0
+Verdict         : READY - safety checks passed and launcher generated; run without --prepare-only to boot
+Next            : upload logs/gate05/gate05c_m8exp_20261107-182843.log and its .sha256 manifest

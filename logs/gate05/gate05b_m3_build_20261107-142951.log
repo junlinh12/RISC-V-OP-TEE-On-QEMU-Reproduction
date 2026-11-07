@@ -1,0 +1,118 @@
+
+===== 0. Meta =====
+Gate        : 05b-1 (build RP016 m3 in its own tree)
+Mode        : prepare-only
+Timestamp   : 20261107-142951
+Script      : scripts/gate05b_build.sh  sha256=6536d20adaaee8998365b787d400564ce7b0020bbfa9ffbec603b7514e32988b
+
+===== 1. Pre-checks =====
+[OK]   MemAvailable 15 GiB
+[OK]   free disk 430 GiB
+[OK]   M1 reference tree present (it is not modified by this script)
+Target   : m3   branch rp016_m3_virq_up_v1   pinned f2e760efebf60feb95b39a780506d5b1b12e308a
+Tree     : work/buildroot-m3
+BR2_DL_DIR: work/dl-g05
+Jobs     : make -j2, BR2_JLEVEL=2 (set G05B_JOBS to change)
+
+===== 2. Buildroot tree (pinned) =====
+[OK]   remote rp016_m3_virq_up_v1 tip = pinned commit
+$ git -C '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m3' fetch --quiet origin
+[rc=0]
+$ git checkout --quiet -B 'rp016_m3_virq_up_v1' 'f2e760efebf60feb95b39a780506d5b1b12e308a'
+[rc=0]
+[OK]   HEAD f2e760efebf60feb95b39a780506d5b1b12e308a
+$ git log -1 --format='%cs %s'
+2026-05-28 makefile: Update opensbi git branch for RP016 M3
+[rc=0]
+
+===== 3. Shared download directory (hard links to M1 tarballs, git caches excluded) =====
+[OK]   work/dl-g05 exists (21487 files) - not re-seeded
+
+===== 4. Components (read from local.mk and the defconfig, resolved to SHAs) =====
+-- local.mk overrides --
+[OK]   BM_APP    custom/bm-app    rp016_m3_virq_v2 @ cad8639a1489bbff36ce04302aa2d726a77dba12
+[OK]   OPENSBI   custom/opensbi   rp016_m3_virq_up_v1 @ 7ca03a0f3259af7e8d23fd04f378cf5d8a6cc98d
+[OK]   OPTEE_OS  custom/optee-os  rp016_m1 @ 814978eb15b92c3b97255a8c000f44cd84aac008
+[OK]   QEMU      custom/qemu      rp016_m1 @ 9c23f2a7b0b45277693a14074b1aaa827eecdb92
+-- defconfig custom git repos --
+[OK]   BR2_LINUX_KERNEL     rp016_m1 @ 2912ca616fc806dbeeba2e1ac7a157e0843d6987 (pinned in .config)
+[INFO] BR2_TARGET_OPTEE_OS  overridden by local.mk (defconfig version rp016_m1 not used)
+[INFO] BR2_TARGET_OPENSBI   overridden by local.mk (defconfig version rp016_m1 not used)
+[OK]   BR2_TARGET_UBOOT     rp016_m1 @ 32bdb252fab83028768a269fb304b9356547ccbd (pinned in .config)
+pins written to logs/gate05/gate05b_m3_pins_20261107-142951.txt
+
+===== 5. Pin custom/ checkouts (local branch at the pinned SHA) =====
+
+--- custom/bm-app
+$ git -C 'custom/bm-app' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/bm-app' checkout --quiet -B 'rp016_m3_virq_v2' 'cad8639a1489bbff36ce04302aa2d726a77dba12'
+[rc=0]
+[OK]   custom/bm-app HEAD = cad8639a1489bbff36ce04302aa2d726a77dba12 (branch rp016_m3_virq_v2)
+
+--- custom/opensbi
+$ git -C 'custom/opensbi' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/opensbi' checkout --quiet -B 'rp016_m3_virq_up_v1' '7ca03a0f3259af7e8d23fd04f378cf5d8a6cc98d'
+[rc=0]
+[OK]   custom/opensbi HEAD = 7ca03a0f3259af7e8d23fd04f378cf5d8a6cc98d (branch rp016_m3_virq_up_v1)
+
+--- custom/optee-os
+$ git -C 'custom/optee-os' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/optee-os' checkout --quiet -B 'rp016_m1' '814978eb15b92c3b97255a8c000f44cd84aac008'
+[rc=0]
+[OK]   custom/optee-os HEAD = 814978eb15b92c3b97255a8c000f44cd84aac008 (branch rp016_m1)
+
+--- custom/qemu
+$ git -C 'custom/qemu' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/qemu' checkout --quiet -B 'rp016_m1' '9c23f2a7b0b45277693a14074b1aaa827eecdb92'
+[rc=0]
+[OK]   custom/qemu HEAD = 9c23f2a7b0b45277693a14074b1aaa827eecdb92 (branch rp016_m1)
+
+===== 6. Configure (upstream defconfig + SHAs in .config) =====
+$ make -s qemu_riscv64_virt_optee_defconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m3/.config
+#
+[rc=0]
+$ utils/config --file .config --set-str BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION 2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[rc=0]
+$ utils/config --file .config --set-str BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION 32bdb252fab83028768a269fb304b9356547ccbd
+[rc=0]
+$ utils/config --file .config --set-val BR2_JLEVEL 2
+[rc=0]
+$ make -s olddefconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m3/.config
+#
+[rc=0]
+[OK]   .config BR2_JLEVEL=2 (per-package parallel jobs)
+[OK]   .config BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION=2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[OK]   .config BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION=32bdb252fab83028768a269fb304b9356547ccbd
+$ make -s --no-print-directory printvars VARS='LINUX_VERSION UBOOT_VERSION OPENSBI_VERSION OPTEE_OS_VERSION QEMU_VERSION OPTEE_TEST_VERSION'
+[BR] QEMU override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m3/custom/qemu
+[BR] QEMU branch: rp016_m1
+[BR] OpenSBI override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m3/custom/opensbi
+[BR] OpenSBI branch: rp016_m3_virq_up_v1
+[BR] OP-TEE OS override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m3/custom/optee-os
+[BR] OP-TEE OS branch: rp016_m1
+[BR] Bare-metal app override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m3/custom/bm-app
+[BR] Bare-metal app branch: rp016_m3_virq_v2
+LINUX_VERSION=2912ca616fc806dbeeba2e1ac7a157e0843d6987
+OPENSBI_VERSION=custom
+OPTEE_OS_VERSION=custom
+OPTEE_TEST_VERSION=4.6.0
+QEMU_VERSION=custom
+UBOOT_VERSION=32bdb252fab83028768a269fb304b9356547ccbd
+[rc=0]
+
+[INFO] --prepare-only: stopped before the build
+
+===== 10. Summary =====
+Target          : m3 (rp016_m3_virq_up_v1 @ f2e760efebf6)
+Mode            : prepare-only
+Failed checks   : 0
+Verdict         : PREPARED - run without --prepare-only to build
+Next            : upload logs/gate05/gate05b_m3_build_20261107-142951.log and its .sha256 manifest

@@ -1,0 +1,35 @@
+
+===== 0. Meta =====
+Gate        : 05a (isolation demonstration + bare-metal app; M1 images, -snapshot)
+Mode        : prepare-only
+Timestamp   : 20261107-120116
+Script      : scripts/gate05a_isolation.sh  sha256=239e7edb89b789edfc380de86aec23a2a8f310b9e5402a1b06f788eb15ecd155
+
+===== 1. Safety pre-checks =====
+[OK]   unprivileged user (uid 1000)
+[OK]   Buildroot QEMU: QEMU emulator version 10.1.93
+[OK]   start-qemu.sh puts output/host/bin first in PATH
+[OK]   required images present
+[OK]   ports 64320 / 64321 / 2200 are free
+[OK]   scripts/gate05a_console.py  sha256=3ec32a2507e41f86bf8ec9b1247e20980bf35fd40ce2149a86e8f6c935143a79
+-- guest facts relevant to the Linux run (supplementary) --
+kernel  CONFIG_DEVMEM=y
+kernel  # CONFIG_STRICT_DEVMEM is not set
+guest   devmem present (/sbin/devmem)
+sdcard.img sha256 before: dec313128728f53573679bb80094c5307e48a7adc281aeeeff55c73bd75ed1c6
+
+===== 2. Loopback-only launcher (upstream start-qemu.sh is not modified) =====
+[OK]   launcher regenerated (only the hostfwd address differs); every boot adds -snapshot
+-- plan --
+U1  U-Boot md: control 0x80200000, probe 0xf1000000 (OP-TEE)
+U2  U-Boot md: control 0x80200000, probe 0x80100000 (OpenSBI)
+L   Linux devmem: control 0x0c000004 (PLIC), probes 0xf1000000 0x80100000
+BM  start-qemu-bm.sh (timeout 180 s)
+
+[INFO] --prepare-only: QEMU was not started
+
+===== 9. Summary =====
+Mode            : prepare-only
+Failed checks   : 0
+Verdict         : READY - run without --prepare-only
+Next            : upload logs/gate05/gate05a_isolation_20261107-120116.log and its .sha256 manifest

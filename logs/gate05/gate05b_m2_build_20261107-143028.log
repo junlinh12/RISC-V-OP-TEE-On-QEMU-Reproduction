@@ -1,0 +1,336 @@
+
+===== 0. Meta =====
+Gate        : 05b-1 (build RP016 m2 in its own tree)
+Mode        : full
+Timestamp   : 20261107-143028
+Script      : scripts/gate05b_build.sh  sha256=6536d20adaaee8998365b787d400564ce7b0020bbfa9ffbec603b7514e32988b
+
+===== 1. Pre-checks =====
+[OK]   MemAvailable 16 GiB
+[OK]   free disk 430 GiB
+[OK]   M1 reference tree present (it is not modified by this script)
+Target   : m2   branch rp016_m2_aplic_up_v2   pinned 8fba3ebe3c5b15b9fff51c310da1ee4195d2af4d
+Tree     : work/buildroot-m2
+BR2_DL_DIR: work/dl-g05
+Jobs     : make -j2, BR2_JLEVEL=2 (set G05B_JOBS to change)
+
+===== 2. Buildroot tree (pinned) =====
+[OK]   remote rp016_m2_aplic_up_v2 tip = pinned commit
+$ git -C '<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2' fetch --quiet origin
+[rc=0]
+$ git checkout --quiet -B 'rp016_m2_aplic_up_v2' '8fba3ebe3c5b15b9fff51c310da1ee4195d2af4d'
+[rc=0]
+[OK]   HEAD 8fba3ebe3c5b15b9fff51c310da1ee4195d2af4d
+$ git log -1 --format='%cs %s'
+2026-05-28 makefile: update the QEMU start script
+[rc=0]
+
+===== 3. Shared download directory (hard links to M1 tarballs, git caches excluded) =====
+[OK]   work/dl-g05 exists (21487 files) - not re-seeded
+
+===== 4. Components (read from local.mk and the defconfig, resolved to SHAs) =====
+-- local.mk overrides --
+[OK]   BM_APP    custom/bm-app    rp016_m1 @ 97545c35a74ad387f7790b02a35b0f2b4d29bb6e
+[OK]   OPENSBI   custom/opensbi   rp016_m2_aplic_up_v2 @ 4533a2a938928d89d41f6ad144272567915a8435
+[OK]   OPTEE_OS  custom/optee-os  rp016_m1 @ 814978eb15b92c3b97255a8c000f44cd84aac008
+[OK]   QEMU      custom/qemu      rp016_m1 @ 9c23f2a7b0b45277693a14074b1aaa827eecdb92
+-- defconfig custom git repos --
+[OK]   BR2_LINUX_KERNEL     rp016_m1 @ 2912ca616fc806dbeeba2e1ac7a157e0843d6987 (pinned in .config)
+[INFO] BR2_TARGET_OPTEE_OS  overridden by local.mk (defconfig version rp016_m1 not used)
+[INFO] BR2_TARGET_OPENSBI   overridden by local.mk (defconfig version rp016_m1 not used)
+[OK]   BR2_TARGET_UBOOT     rp016_m1 @ 32bdb252fab83028768a269fb304b9356547ccbd (pinned in .config)
+pins written to logs/gate05/gate05b_m2_pins_20261107-143028.txt
+
+===== 5. Pin custom/ checkouts (local branch at the pinned SHA) =====
+
+--- custom/bm-app
+$ git -C 'custom/bm-app' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/bm-app' checkout --quiet -B 'rp016_m1' '97545c35a74ad387f7790b02a35b0f2b4d29bb6e'
+[rc=0]
+[OK]   custom/bm-app HEAD = 97545c35a74ad387f7790b02a35b0f2b4d29bb6e (branch rp016_m1)
+
+--- custom/opensbi
+$ git -C 'custom/opensbi' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/opensbi' checkout --quiet -B 'rp016_m2_aplic_up_v2' '4533a2a938928d89d41f6ad144272567915a8435'
+[rc=0]
+[OK]   custom/opensbi HEAD = 4533a2a938928d89d41f6ad144272567915a8435 (branch rp016_m2_aplic_up_v2)
+
+--- custom/optee-os
+$ git -C 'custom/optee-os' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/optee-os' checkout --quiet -B 'rp016_m1' '814978eb15b92c3b97255a8c000f44cd84aac008'
+[rc=0]
+[OK]   custom/optee-os HEAD = 814978eb15b92c3b97255a8c000f44cd84aac008 (branch rp016_m1)
+
+--- custom/qemu
+$ git -C 'custom/qemu' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/qemu' checkout --quiet -B 'rp016_m1' '9c23f2a7b0b45277693a14074b1aaa827eecdb92'
+[rc=0]
+[OK]   custom/qemu HEAD = 9c23f2a7b0b45277693a14074b1aaa827eecdb92 (branch rp016_m1)
+
+===== 6. Configure (upstream defconfig + SHAs in .config) =====
+$ make -s qemu_riscv64_virt_optee_defconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/.config
+#
+[rc=0]
+$ utils/config --file .config --set-str BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION 2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[rc=0]
+$ utils/config --file .config --set-str BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION 32bdb252fab83028768a269fb304b9356547ccbd
+[rc=0]
+$ utils/config --file .config --set-val BR2_JLEVEL 2
+[rc=0]
+$ make -s olddefconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/.config
+#
+[rc=0]
+[OK]   .config BR2_JLEVEL=2 (per-package parallel jobs)
+[OK]   .config BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION=2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[OK]   .config BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION=32bdb252fab83028768a269fb304b9356547ccbd
+$ make -s --no-print-directory printvars VARS='LINUX_VERSION UBOOT_VERSION OPENSBI_VERSION OPTEE_OS_VERSION QEMU_VERSION OPTEE_TEST_VERSION'
+[BR] QEMU override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/qemu
+[BR] QEMU branch: rp016_m1
+[BR] OpenSBI override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/opensbi
+[BR] OpenSBI branch: rp016_m2_aplic_up_v2
+[BR] OP-TEE OS override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/optee-os
+[BR] OP-TEE OS branch: rp016_m1
+[BR] Bare-metal app override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/bm-app
+[BR] Bare-metal app branch: rp016_m1
+LINUX_VERSION=2912ca616fc806dbeeba2e1ac7a157e0843d6987
+OPENSBI_VERSION=custom
+OPTEE_OS_VERSION=custom
+OPTEE_TEST_VERSION=4.6.0
+QEMU_VERSION=custom
+UBOOT_VERSION=32bdb252fab83028768a269fb304b9356547ccbd
+[rc=0]
+
+===== 7. Build (make -j2, BR2_JLEVEL=2) =====
+Full output: logs/gate05/raw/gate05b_m2_make_20261107-143028.raw.log (raw)  /  logs/gate05/gate05b_m2_make_20261107-143028.log (sanitized)
+[14:30:42] [BR] QEMU override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/qemu
+[14:30:42] [BR] QEMU branch: rp016_m1
+[14:30:42] [BR] OpenSBI override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/opensbi
+[14:30:42] [BR] OpenSBI branch: rp016_m2_aplic_up_v2
+[14:30:42] [BR] OP-TEE OS override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/optee-os
+[14:30:42] [BR] OP-TEE OS branch: rp016_m1
+[14:30:42] [BR] Bare-metal app override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/bm-app
+[14:30:42] [BR] Bare-metal app branch: rp016_m1
+[14:35:51] [BR] OP-TEE_OS dev tree exists. Fetching updates...
+[14:35:52] [BR] Checking out rp016_m1...
+[14:35:52] [BR] Updating submodules (if any)...
+[14:38:02] [BR] QEMU dev tree exists. Fetching updates...
+[14:38:03] [BR] Checking out rp016_m1...
+[14:38:03] [BR] Updating submodules (if any)...
+[14:41:23] [BR] Installing host-qemu configure wrapper to ignore GIT_DIR...
+[14:43:45] [BR] OpenSBI dev tree exists. Fetching updates...
+[14:43:46] [BR] Checking out rp016_m2_aplic_up_v2...
+[14:43:46] [BR] Updating submodules (if any)...
+[14:58:20] [BR] BM_APP dev tree exists. Fetching updates...
+[14:58:21] [BR] Checking out rp016_m1...
+[14:58:21] [BR] Updating submodules (if any)...
+[14:58:21] [BR] Building bare-metal app from <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/custom/bm-app...
+[14:58:21] [BR] Generating start-qemu-bm.sh...
+[14:58:21] [BR] Generating start-qemu-kernel.sh...
+$ make -j2
+[rc=0]
+Elapsed : 27 min 40 s
+[OK]   build finished
+
+===== 8. Verify the commits actually used =====
+[OK]   custom/bm-app    HEAD = 97545c35a74ad387f7790b02a35b0f2b4d29bb6e
+[OK]   custom/opensbi   HEAD = 4533a2a938928d89d41f6ad144272567915a8435
+[OK]   custom/optee-os  HEAD = 814978eb15b92c3b97255a8c000f44cd84aac008
+[OK]   custom/qemu      HEAD = 9c23f2a7b0b45277693a14074b1aaa827eecdb92
+[OK]   output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[OK]   output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd
+
+===== 9. Artifacts and generated start scripts (input for the G05b-2 tests) =====
+$ ls -l output/images
+total 434016
+-rwxr-xr-x 1 <USER> <USER>     17600 Nov  7 14:58 bm-app.elf
+-rw-r--r-- 1 <USER> <USER>    277296 Nov  7 14:43 fw_dynamic.bin
+-rw-r--r-- 1 <USER> <USER>   2195600 Nov  7 14:43 fw_dynamic.elf
+-rw-r--r-- 1 <USER> <USER>    277256 Nov  7 14:43 fw_jump.bin
+-rw-r--r-- 1 <USER> <USER>   2195176 Nov  7 14:43 fw_jump.elf
+-rw-r--r-- 1 <USER> <USER>  27386880 Nov  7 14:58 Image
+-rwxr-xr-x 1 <USER> <USER>      6907 Nov  7 14:58 qemu_rv64_virt_domain.dtb
+-rw-r--r-- 1 <USER> <USER> 272629760 Nov  7 14:58 rootfs.ext2
+-rw-r--r-- 1 <USER> <USER> 134717440 Nov  7 14:58 rootfs.tar
+-rw-r--r-- 1 <USER> <USER> 272630272 Nov  7 14:58 sdcard.img
+-rwxr-xr-x 1 <USER> <USER>       524 Nov  7 14:58 start-qemu-bm.sh
+-rwxr-xr-x 1 <USER> <USER>      1539 Nov  7 14:58 start-qemu-kernel.sh
+-rwxr-xr-x 1 <USER> <USER>      1014 Nov  7 14:58 start-qemu.sh
+-rwxr-xr-x 1 <USER> <USER>    696880 Nov  7 14:36 tee.bin
+-rw-r--r-- 1 <USER> <USER>    635260 Nov  7 14:46 u-boot.bin
+-rw-r--r-- 1 <USER> <USER>   1606043 Nov  7 14:47 u-boot.itb
+-rwxr-xr-x 1 <USER> <USER>   1268520 Nov  7 14:47 u-boot-spl
+[rc=0]
+-- sha256 (start scripts excluded) --
+3eb664242907f24003494c7d4db5c061de3580e322e0964382290aed017f2146  bm-app.elf
+84a031019a606aee9ae26627b9905ce830cabde373173d3b6524864025dda592  fw_dynamic.bin
+1ec3ec3da9003345a4d0bb5e22386de745bb48c437704d23541edcc9fde080e8  fw_dynamic.elf
+4b42ffbd3caed056756162af364eb5469c74a882e46ee391329a00703037f476  fw_jump.bin
+0f00a9ae9f7a99958b1b92517befd0dd68e6a5cdb94d98e6ea5874639ddb52f3  fw_jump.elf
+f5ab93b4ef996e15f3211e544b79e32489b01eba975264839da37979dd2b46ac  Image
+6e1e8c35e2d2b610ceb69b783e7f96ab6bdf92778855fe4f541b02ebd3697294  qemu_rv64_virt_domain.dtb
+98cee73849ffdbb86a8cad989dd79a521f2bbead949ec504c88299ab068c8bb1  rootfs.ext2
+2b59bf2ae3f5b99165e4d2c0b438d06ab5447b36384ebf6fd36664358968a255  rootfs.tar
+cc63f78d81f67f46c4c7cee611251de7c0b78b62ce628b96a567d521e96e7ec7  sdcard.img
+1d96b98581f4da718fe471d31d25b13a1dfcc2eb9560e8ec443f50cebc417543  tee.bin
+2b22e220da0a31bc2e105c49891845866f2cfa55c5bb9d9b0e19778b8b096a63  u-boot.bin
+5901174aae6a649e806b85f806d9247f9d3e714d187d61fa013dbae0f1afa1c3  u-boot.itb
+a25723a4c216cdb28c3429e331ec786c7a5121a2e9df61640e0b2434964acb86  u-boot-spl
+$ output/host/bin/qemu-system-riscv64 --version | head -n1
+QEMU emulator version 10.1.93
+[rc=0]
+
+----- output/images/start-qemu-bm.sh -----
+#!/bin/sh
+
+BINARIES_DIR="${0%/*}/"
+
+cd "${BINARIES_DIR}"
+
+mode_serial=true
+mode_sys_qemu=false
+
+if ${mode_serial}; then
+    EXTRA_ARGS='-nographic'
+else
+    EXTRA_ARGS=''
+fi
+
+if ! ${mode_sys_qemu}; then
+    export PATH="<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/output/host/bin:${PATH}"
+fi
+
+qemu-system-riscv64 \
+    -M virt \
+    -cpu rv64,zkr=on \
+    -m 4096 \
+    -smp 2 \
+    -nographic \
+    -bios fw_jump.bin \
+    -kernel bm-app.elf \
+    -serial mon:stdio \
+    ${EXTRA_ARGS} "$@"
+
+----- output/images/start-qemu-kernel.sh -----
+#!/bin/sh
+
+BINARIES_DIR="${0%/*}/"
+
+CONFIG_DIR="$(cd "${BINARIES_DIR}../../" && pwd)"
+
+cd "${BINARIES_DIR}"
+
+mode_serial=true
+mode_sys_qemu=false
+
+if ${mode_serial}; then
+    EXTRA_ARGS='-nographic'
+else
+    EXTRA_ARGS=''
+fi
+
+if ! ${mode_sys_qemu}; then
+    export PATH="<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/output/host/bin:${PATH}"
+fi
+
+qemu-system-riscv64 \
+    -M virt,aia=aplic \
+    -machine dumpdtb=qemu_base_m2_smp2.dtb \
+    -cpu rv64,zkr=on \
+    -m 4096 \
+    -smp 2 \
+    -nographic \
+    ${EXTRA_ARGS} "$@"
+dtc -@ -I dts -O dtb -o aplic_mmode_wired_irq_test_smp2.dto \
+    "${CONFIG_DIR}/custom/opensbi/platform/generic/virt/aplic_mmode_wired_irq_test_smp2.dts" 
+fdtoverlay -i qemu_base_m2_smp2.dtb -o qemu_base_m2_mwired_smp2.dtb aplic_mmode_wired_irq_test_smp2.dto 
+qemu-system-riscv64 \
+    -M virt,aia=aplic \
+    -cpu rv64,zkr=on \
+    -m 4096 \
+    -smp 2 \
+    -nographic \
+    -dtb qemu_base_m2_mwired_smp2.dtb \
+    -bios fw_jump.bin \
+    -kernel Image \
+    -device virtio-blk-device,drive=hd0 \
+    -drive if=none,format=raw,file=sdcard.img,id=hd0 \
+    -device virtio-serial-device \
+    -chardev socket,id=vc0,host=127.0.0.1,port=64321,server=on,wait=on \
+    -device virtconsole,chardev=vc0 \
+    -chardev socket,id=vc1,host=127.0.0.1,port=64322,server=on,wait=off \
+    -device virtconsole,chardev=vc1 \
+    -device virtio-net-pci,netdev=net0 \
+    -netdev user,id=net0,hostfwd=tcp::2200-:22 \
+    -append "console=hvc0 root=/dev/vda1 rw rootwait" \
+    ${EXTRA_ARGS} "$@"
+
+----- output/images/start-qemu.sh -----
+#!/bin/sh
+
+BINARIES_DIR="${0%/*}/"
+# shellcheck disable=SC2164
+cd "${BINARIES_DIR}"
+
+mode_serial=false
+mode_sys_qemu=false
+while [ "$1" ]; do
+    case "$1" in
+    --serial-only|serial-only) mode_serial=true; shift;;
+    --use-system-qemu) mode_sys_qemu=true; shift;;
+    --) shift; break;;
+    *) echo "unknown option: $1" >&2; exit 1;;
+    esac
+done
+
+if ${mode_serial}; then
+    EXTRA_ARGS='-nographic'
+else
+    EXTRA_ARGS=''
+fi
+
+if ! ${mode_sys_qemu}; then
+    export PATH="<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m2/output/host/bin:${PATH}"
+fi
+
+exec qemu-system-riscv64 -M virt -cpu rv64,zkr=on -dtb qemu_rv64_virt_domain.dtb -m 4096 -smp 2 -semihosting-config enable=on,target=native -serial tcp:127.0.0.1:64320,server -bios u-boot-spl -device loader,file=u-boot.itb,addr=0x80200000 -device virtio-blk-device,drive=hd0 -drive format=raw,file=sdcard.img,id=hd0,if=none -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp::2200-:22 -nographic  ${EXTRA_ARGS} "$@"
+
+-- device-tree sources / overlays shipped with the images --
+board/andes/ae350/rootfs_overlay
+board/arm/fvp-ebbr/fvp-ebbr.dts
+board/arrow/avenger96/overlay
+board/avnet/s6lx9_microboard/lx9_mmu.dts
+board/beagleboard/beaglebone/rootfs_overlay
+board/beagleboard/beaglev_fire/rootfs-overlay
+board/cubietech/cubieboard1/rootfs_overlay
+board/cubietech/cubieboard2/rootfs_overlay
+board/embest/riotboard/rootfs_overlay
+board/engicam/icorem6/rootfs_overlay
+board/freescale/imx6-sabresd/rootfs_overlay
+board/freescale/imx7dsdb/rootfs_overlay
+board/freescale/ls1028ardb/rootfs_overlay
+board/freescale/ls1043a-rdb/rootfs_overlay
+board/freescale/ls1046a-frwy/rootfs_overlay
+board/freescale/ls1046a-rdb/rootfs_overlay
+board/friendlyarm/nanopi-r3s/rootfs_overlay
+board/hardkernel/odroidc2/rootfs_overlay
+board/intel/galileo/rootfs_overlay
+board/kontron/smarc-sal28/rootfs_overlay
+$ du -sh output custom
+19G	output
+4.4G	custom
+[rc=0]
+
+===== 10. Summary =====
+Target          : m2 (rp016_m2_aplic_up_v2 @ 8fba3ebe3c5b)
+Mode            : full
+Failed checks   : 0
+Verdict         : BUILD COMPLETED AND VERIFIED
+Next            : upload logs/gate05/gate05b_m2_build_20261107-143028.log and its .sha256 manifest

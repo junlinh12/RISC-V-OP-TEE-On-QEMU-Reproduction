@@ -1,0 +1,105 @@
+
+===== 0. Meta =====
+Gate        : 02 (Buildroot build with pinned sources)
+Mode        : prepare-only
+Timestamp   : 20261106-204347
+ProjectRoot : <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction
+Script      : scripts/gate02_build.sh  sha256=609db2e9747802d8b0e691d8918c932b8807d9702cb19dac585453921c1bada8
+Raw log     : logs/gate02/raw/gate02_build_20261106-204347.raw.log  (local only, not published)
+Pins        : buildroot=d7204671a32ca2edc521c35de758ce650ebf1cb6
+              linux=2912ca616fc806dbeeba2e1ac7a157e0843d6987
+              u-boot=32bdb252fab83028768a269fb304b9356547ccbd
+              qemu=9c23f2a7b0b45277693a14074b1aaa827eecdb92
+              opensbi=cdd401f1517b4599b7d08ce13cd83859acc4cbb2
+              optee-os=814978eb15b92c3b97255a8c000f44cd84aac008
+              bm-app=97545c35a74ad387f7790b02a35b0f2b4d29bb6e
+
+===== 1. Pre-checks =====
+[OK]   MemAvailable 13 GiB
+[OK]   free disk 463 GiB
+[OK]   .gitignore contains work/
+[OK]   .gitignore contains logs/**/raw/
+[OK]   .gitignore contains logs/**/G*_checkpoint.md
+[OK]   ports 64320 / 64321 / 2200 are free (used in G03)
+[OK]   Buildroot HEAD d7204671a32ca2edc521c35de758ce650ebf1cb6
+[OK]   no tracked file of the Buildroot tree is modified
+[OK]   utils/config available
+-- local.mk entries --
+[OK]   qemu      url=https://gitlab.com/riseproject/riscv-optee/qemu.git branch=rp016_m1
+[OK]   opensbi   url=https://gitlab.com/riseproject/riscv-optee/opensbi.git branch=rp016_m1
+[OK]   optee-os  url=https://gitlab.com/riseproject/riscv-optee/optee_os.git branch=rp016_m1
+[OK]   bm-app    url=https://gitlab.com/riseproject/riscv-optee/bm-app.git branch=rp016_m1
+
+===== 2. Pin custom/ checkouts (local branch rp016_m1 at the pinned SHA) =====
+
+--- qemu
+$ git clone --quiet 'https://gitlab.com/riseproject/riscv-optee/qemu.git' 'custom/qemu'
+[rc=0]
+$ git -C 'custom/qemu' checkout --quiet -B 'rp016_m1' '9c23f2a7b0b45277693a14074b1aaa827eecdb92'
+[rc=0]
+[OK]   custom/qemu HEAD = 9c23f2a7b0b45277693a14074b1aaa827eecdb92 (branch rp016_m1)
+
+--- opensbi
+$ git clone --quiet 'https://gitlab.com/riseproject/riscv-optee/opensbi.git' 'custom/opensbi'
+[rc=0]
+$ git -C 'custom/opensbi' checkout --quiet -B 'rp016_m1' 'cdd401f1517b4599b7d08ce13cd83859acc4cbb2'
+[rc=0]
+[OK]   custom/opensbi HEAD = cdd401f1517b4599b7d08ce13cd83859acc4cbb2 (branch rp016_m1)
+
+--- optee-os
+$ git clone --quiet 'https://gitlab.com/riseproject/riscv-optee/optee_os.git' 'custom/optee-os'
+[rc=0]
+$ git -C 'custom/optee-os' checkout --quiet -B 'rp016_m1' '814978eb15b92c3b97255a8c000f44cd84aac008'
+[rc=0]
+[OK]   custom/optee-os HEAD = 814978eb15b92c3b97255a8c000f44cd84aac008 (branch rp016_m1)
+
+--- bm-app
+$ git clone --quiet 'https://gitlab.com/riseproject/riscv-optee/bm-app.git' 'custom/bm-app'
+[rc=0]
+$ git -C 'custom/bm-app' checkout --quiet -B 'rp016_m1' '97545c35a74ad387f7790b02a35b0f2b4d29bb6e'
+[rc=0]
+[OK]   custom/bm-app HEAD = 97545c35a74ad387f7790b02a35b0f2b4d29bb6e (branch rp016_m1)
+
+===== 3. Configure (upstream defconfig + Linux / U-Boot pinned in .config) =====
+$ make -s qemu_riscv64_virt_optee_defconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/.config
+#
+[rc=0]
+$ utils/config --file .config --set-str BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION 2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[rc=0]
+$ utils/config --file .config --set-str BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION 32bdb252fab83028768a269fb304b9356547ccbd
+[rc=0]
+$ make -s olddefconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/.config
+#
+[rc=0]
+[OK]   .config BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="2912ca616fc806dbeeba2e1ac7a157e0843d6987"
+[OK]   .config BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION="32bdb252fab83028768a269fb304b9356547ccbd"
+$ make -s --no-print-directory printvars VARS='LINUX_VERSION UBOOT_VERSION OPENSBI_VERSION OPTEE_OS_VERSION QEMU_VERSION OPTEE_CLIENT_VERSION OPTEE_TEST_VERSION OPTEE_EXAMPLES_VERSION'
+[BR] QEMU override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/qemu
+[BR] QEMU branch: rp016_m1
+[BR] OpenSBI override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/opensbi
+[BR] OpenSBI branch: rp016_m1
+[BR] OP-TEE OS override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/optee-os
+[BR] OP-TEE OS branch: rp016_m1
+[BR] Bare-metal app override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/bm-app
+[BR] Bare-metal app branch: rp016_m1
+LINUX_VERSION=2912ca616fc806dbeeba2e1ac7a157e0843d6987
+OPENSBI_VERSION=custom
+OPTEE_CLIENT_VERSION=4.6.0
+OPTEE_EXAMPLES_VERSION=4.6.0
+OPTEE_OS_VERSION=custom
+OPTEE_TEST_VERSION=4.6.0
+QEMU_VERSION=custom
+UBOOT_VERSION=32bdb252fab83028768a269fb304b9356547ccbd
+[rc=0]
+
+[INFO] --prepare-only: stopped before the build (nothing was compiled)
+
+===== 9. Summary =====
+Mode            : prepare-only
+Failed commands : 0
+Verdict         : PREPARED - sources pinned and configured; run without --prepare-only to build
+Next            : upload logs/gate02/gate02_build_20261106-204347.log (the sanitized log) to the chat

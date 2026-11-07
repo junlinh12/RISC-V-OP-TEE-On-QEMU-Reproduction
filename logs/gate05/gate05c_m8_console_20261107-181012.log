@@ -1,0 +1,938 @@
+
+U-Boot SPL 2025.01 (Nov 07 2026 - 17:36:12 <TZ>)
+Trying to boot from RAM
+
+OpenSBI v1.8
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+WARNING: riscv,rpmi-mpxy-tee driver is experimental and may change
+WARNING: riscv,rpmi-mpxy-reqfwd driver is experimental and may change
+WARNING: riscv,rpmi-mpxy-tee driver is experimental and may change
+WARNING: riscv,rpmi-mpxy-reqfwd driver is experimental and may change
+Platform Name               : riscv-virtio,qemu
+Platform Features           : medeleg
+Platform HART Count         : 2
+Platform HART Protection    : pmp
+Platform IPI Device         : aclint-mswi
+Platform Timer Device       : aclint-mtimer @ 10000000Hz
+Platform Console Device     : uart8250
+Platform HSM Device         : ---
+Platform PMU Device         : ---
+Platform Reboot Device      : syscon-reboot
+Platform Shutdown Device    : syscon-poweroff
+Platform Suspend Device     : ---
+Platform CPPC Device        : ---
+Firmware Base               : 0x80100000
+Firmware Size               : 333 KB
+Firmware RW Offset          : 0x40000
+Firmware RW Size            : 77 KB
+Firmware Heap Offset        : 0x49000
+Firmware Heap Size          : 41 KB (total), 1 KB (reserved), 17 KB (used), 22 KB (free)
+Firmware Scratch Size       : 4096 B (total), 1464 B (used), 2632 B (free)
+Runtime SBI Version         : 3.0
+Standard SBI Extensions     : time,rfnc,ipi,base,hsm,srst,pmu,dbcn,fwft,legacy,dbtr,sse,mpxy
+Experimental SBI Extensions : none
+
+Domain0 Name                : root
+Domain0 Boot HART           : 0
+Domain0 HARTs               : 0,1
+Domain0 Region00            : 0x0000000080140000-0x000000008015ffff M: (F,R,W) S/U: ()
+Domain0 Region01            : 0x0000000080100000-0x000000008013ffff M: (F,R,X) S/U: ()
+Domain0 Region02            : 0x0000000000100000-0x0000000000100fff M: (I,R,W) S/U: (R,W)
+Domain0 Region03            : 0x0000000010000000-0x0000000010000fff M: (I,R,W) S/U: (R,W)
+Domain0 Region04            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain0 Region05            : 0x000000000c400000-0x000000000c5fffff M: (I,R,W) S/U: (R,W)
+Domain0 Region06            : 0x000000000c000000-0x000000000c3fffff M: (I,R,W) S/U: (R,W)
+Domain0 Region07            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (R,W,X)
+Domain0 Next Address        : 0x0000000081200000
+Domain0 Next Arg1           : 0x0000000081299ce0
+Domain0 Next Mode           : S-mode
+Domain0 SysReset            : yes
+Domain0 SysSuspend          : yes
+
+Domain1 Name                : trusted-domain
+Domain1 Boot HART           : 0
+Domain1 HARTs               : 0*,1*
+Domain1 Region00            : 0x0000000080140000-0x000000008015ffff M: (F,R,W) S/U: ()
+Domain1 Region01            : 0x0000000080100000-0x000000008013ffff M: (F,R,X) S/U: ()
+Domain1 Region02            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain1 Region03            : 0x00000000f1100000-0x00000000f117ffff M: (R) S/U: (R)
+Domain1 Region04            : 0x00000000f1180000-0x00000000f11fffff M: (R,W) S/U: (R,W)
+Domain1 Region05            : 0x00000000f1000000-0x00000000f10fffff M: (R,X) S/U: (R,X)
+Domain1 Region06            : 0x0000000000000000-0xffffffffffffffff M: (R,W,X) S/U: (R,W,X)
+Domain1 Next Address        : 0x00000000f1000000
+Domain1 Next Arg1           : 0x0000000081299ce0
+Domain1 Next Mode           : S-mode
+Domain1 SysReset            : no
+Domain1 SysSuspend          : no
+
+Domain2 Name                : untrusted-domain
+Domain2 Boot HART           : 0
+Domain2 HARTs               : 0,1
+Domain2 Region00            : 0x0000000080140000-0x000000008015ffff M: (F,R,W) S/U: ()
+Domain2 Region01            : 0x0000000080100000-0x000000008013ffff M: (F,R,X) S/U: ()
+Domain2 Region02            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain2 Region03            : 0x00000000f1000000-0x00000000f1ffffff M: () S/U: ()
+Domain2 Region04            : 0x0000000000000000-0xffffffffffffffff M: (R,W,X) S/U: (R,W,X)
+Domain2 Next Address        : 0x0000000081200000
+Domain2 Next Arg1           : 0x0000000081299ce0
+Domain2 Next Mode           : S-mode
+Domain2 SysReset            : no
+Domain2 SysSuspend          : no
+
+Boot HART ID                : 0
+Boot HART Domain            : trusted-domain
+Boot HART Priv Version      : v1.12
+Boot HART Base ISA          : rv64imafdcvh
+Boot HART ISA Extensions    : sstc,zicntr,zihpm,zkr,zicboz,zicbom,sdtrig,svadu
+Boot HART PMP Count         : 16
+Boot HART PMP Granularity   : 2 bits
+Boot HART PMP Address Bits  : 54
+Boot HART MHPM Info         : 16 (0x0007fff8)
+Boot HART Debug Triggers    : 2 triggers
+Boot HART MIDELEG           : 0x0000000000001666
+Boot HART MEDELEG           : 0x0000000000f4b509
+
+
+U-Boot 2025.01 (Nov 07 2026 - 17:36:12 <TZ>)
+
+CPU:   riscv
+Model: riscv-virtio,qemu
+DRAM:  4 GiB
+Core:  28 devices, 13 uclasses, devicetree: board
+Flash: 32 MiB
+Loading Environment from nowhere... OK
+In:    serial,usbkbd
+Out:   serial,vidconsole
+Err:   serial,vidconsole
+No USB controllers found
+Net:   eth0: virtio-net#8
+
+Hit any key to stop autoboot:  2  1  0 
+
+Device 0: unknown device
+
+Device 0: QEMU VirtIO Block Device
+            Type: Hard Disk
+            Capacity: 260.0 MB = 0.2 GB (532481 x 512)
+... is now current device
+Scanning virtio 0:1...
+Found /boot/extlinux/extlinux.conf
+Retrieving file: /boot/extlinux/extlinux.conf
+1:	qemu_riscv64_optee
+Retrieving file: /boot/Image
+append: console=ttyS0,115200n8 earlycon=sbi rootwait root=/dev/vda1 rw
+Retrieving file: /boot/qemu_rv64_virt_domain.dtb
+Moving Image from 0x84000000 to 0x80200000, end=0x81c8d000
+## Flattened Device Tree blob at 8c000000
+   Booting using the fdt blob at 0x8c000000
+Working FDT set to 8c000000
+   Using Device Tree in place at 000000008c000000, end 000000008c004c0d
+Working FDT set to 8c000000
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on hartid 0
+[    0.000000] Linux version 6.19.0-rc2 (<USER>@<HOST>) (riscv64-linux-gcc.br_real (Buildroot 2021.11-12449-g1bef613319) 14.2.0, GNU ld (GNU Binutils) 2.42) #1 SMP Sat Nov  7 17:49:36 <TZ> 2026
+[    0.000000] random: crng init done
+[    0.000000] Machine model: riscv-virtio,qemu
+[    0.000000] SBI specification v3.0 detected
+[    0.000000] SBI implementation ID=0x1 Version=0x10008
+[    0.000000] SBI TIME extension detected
+[    0.000000] SBI IPI extension detected
+[    0.000000] SBI RFENCE extension detected
+[    0.000000] SBI SRST extension detected
+[    0.000000] SBI DBCN extension detected
+[    0.000000] SBI FWFT extension detected
+[    0.000000] earlycon: sbi0 at I/O port 0x0 (options '')
+[    0.000000] printk: legacy bootconsole [sbi0] enabled
+[    0.000000] efi: UEFI not found.
+[    0.000000] OF: reserved mem: 0x0000000080140000..0x000000008015ffff (128 KiB) nomap non-reusable mmode_resv0@80140000
+[    0.000000] OF: reserved mem: 0x0000000080100000..0x000000008013ffff (256 KiB) nomap non-reusable mmode_resv1@80100000
+[    0.000000] OF: reserved mem: 0x00000000f1000000..0x00000000f1ffffff (16384 KiB) nomap non-reusable optee_core@f1000000
+[    0.000000] Zone ranges:
+[    0.000000]   DMA32    [mem 0x0000000080000000-0x00000000ffffffff]
+[    0.000000]   Normal   [mem 0x0000000100000000-0x000000017fffffff]
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000080000000-0x00000000800fffff]
+[    0.000000]   node   0: [mem 0x0000000080100000-0x000000008015ffff]
+[    0.000000]   node   0: [mem 0x0000000080160000-0x00000000f0ffffff]
+[    0.000000]   node   0: [mem 0x00000000f1000000-0x00000000f1ffffff]
+[    0.000000]   node   0: [mem 0x00000000f2000000-0x000000017fffffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000080000000-0x000000017fffffff]
+[    0.000000] SBI HSM extension detected
+[    0.000000] riscv: base ISA extensions acdfhim
+[    0.000000] riscv: ELF capabilities acdfim
+[    0.000000] Queued spinlock using Ziccrse: enabled
+[    0.000000] percpu: Embedded 31 pages/cpu s86872 r8192 d31912 u126976
+[    0.000000] Kernel command line: console=ttyS0,115200n8 earlycon=sbi rootwait root=/dev/vda1 rw
+[    0.000000] printk: log buffer data + meta data: 131072 + 458752 = 589824 bytes
+[    0.000000] Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+[    0.000000] software IO TLB: area num 2.
+[    0.000000] software IO TLB: mapped [mem 0x00000000fbfff000-0x00000000fffff000] (64MB)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 1048576
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.000000] rcu: Hierarchical RCU implementation.
+[    0.000000] rcu: 	RCU event tracing is enabled.
+[    0.000000] rcu: 	RCU restricting CPUs from NR_CPUS=64 to nr_cpu_ids=2.
+[    0.000000] 	Tracing variant of Tasks RCU enabled.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.000000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=2
+[    0.000000] RCU Tasks Trace: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.000000] NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
+[    0.000000] riscv-intc: 64 local interrupts mapped
+[    0.000000] riscv: providing IPIs using SBI IPI extension
+[    0.000000] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.000000] clocksource: riscv_clocksource: mask: 0xffffffffffffffff max_cycles: 0x24e6a1710, max_idle_ns: 440795202120 ns
+[    0.000035] sched_clock: 64 bits at 10MHz, resolution 100ns, wraps every 4398046511100ns
+[    0.000163] riscv-timer: Timer interrupt in S-mode is available via sstc extension
+[    0.007082] Console: colour dummy device 80x25
+[    0.008579] Calibrating delay loop (skipped), value calculated using timer frequency.. 20.00 BogoMIPS (lpj=40000)
+[    0.008745] pid_max: default: 32768 minimum: 301
+[    0.012789] Mount-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.012901] Mountpoint-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.038608] riscv: ELF compat mode supported
+[    0.038815] ASID allocator using 16 bits (65536 entries)
+[    0.039548] rcu: Hierarchical SRCU implementation.
+[    0.039620] rcu: 	Max phase no-delay instances is 1000.
+[    0.040402] Timer migration: 1 hierarchy levels; 8 children per group; 1 crossnode level
+[    0.041863] EFI services will not be available.
+[    0.042602] smp: Bringing up secondary CPUs ...
+[    0.051832] smp: Brought up 1 node, 2 CPUs
+[    0.054532] Memory: 3990512K/4194304K available (11882K kernel code, 5910K rwdata, 6144K rodata, 2426K init, 415K bss, 200156K reserved, 0K cma-reserved)
+[    0.062491] devtmpfs: initialized
+[    0.070616] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.070848] posixtimers hash table entries: 1024 (order: 2, 16384 bytes, linear)
+[    0.071048] futex hash table entries: 512 (32768 bytes on 1 NUMA nodes, total 32 KiB, linear).
+[    0.077808] DMI not present or invalid.
+[    0.079367] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.081792] DMA: preallocated 512 KiB GFP_KERNEL pool for atomic allocations
+[    0.082094] DMA: preallocated 512 KiB GFP_KERNEL|GFP_DMA32 pool for atomic allocations
+[    0.082263] audit: initializing netlink subsys (disabled)
+[    0.084035] audit: type=2000 audit(0.076:1): state=initialized audit_enabled=0 res=1
+[    0.085762] thermal_sys: Registered thermal governor 'step_wise'
+[    0.086495] cpuidle: using governor menu
+[    0.088574] SBI misaligned access exception delegation ok
+[    0.109915] cpu1: Ratio of byte access time to unaligned word access is 7.44, unaligned accesses are fast
+[    0.134855] cpu0: Ratio of byte access time to unaligned word access is 7.25, unaligned accesses are fast
+[    0.152802] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+[    0.152900] HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page
+[    0.155369] ACPI: Interpreter disabled.
+[    0.155799] iommu: Default domain type: Translated
+[    0.155869] iommu: DMA domain TLB invalidation policy: strict mode
+[    0.157922] SCSI subsystem initialized
+[    0.159445] usbcore: registered new interface driver usbfs
+[    0.159767] usbcore: registered new interface driver hub
+[    0.159888] usbcore: registered new device driver usb
+[    0.164614] Advanced Linux Sound Architecture Driver Initialized.
+[    0.174190] vgaarb: loaded
+[    0.180358] clocksource: Switched to clocksource riscv_clocksource
+[    0.182729] pnp: PnP ACPI: disabled
+[    0.199017] NET: Registered PF_INET protocol family
+[    0.199999] IP idents hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.205536] tcp_listen_portaddr_hash hash table entries: 2048 (order: 3, 32768 bytes, linear)
+[    0.205666] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.205782] TCP established hash table entries: 32768 (order: 6, 262144 bytes, linear)
+[    0.206057] TCP bind hash table entries: 32768 (order: 8, 1048576 bytes, linear)
+[    0.206548] TCP: Hash tables configured (established 32768 bind 32768)
+[    0.207171] UDP hash table entries: 2048 (order: 5, 131072 bytes, linear)
+[    0.207426] UDP-Lite hash table entries: 2048 (order: 5, 131072 bytes, linear)
+[    0.208515] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.211014] RPC: Registered named UNIX socket transport module.
+[    0.211118] RPC: Registered udp transport module.
+[    0.211173] RPC: Registered tcp transport module.
+[    0.211224] RPC: Registered tcp-with-tls transport module.
+[    0.211280] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    0.211433] PCI: CLS 0 bytes, default 64
+[    0.213585] workingset: timestamp_bits=46 max_order=20 bucket_order=0
+[    0.220516] NFS: Registering the id_resolver key type
+[    0.220778] Key type id_resolver registered
+[    0.220843] Key type id_legacy registered
+[    0.221155] nfs4filelayout_init: NFSv4 File Layout Driver Registering...
+[    0.221319] nfs4flexfilelayout_init: NFSv4 Flexfile Layout Driver Registering...
+[    0.221856] 9p: Installing v9fs 9p2000 file system support
+[    0.222905] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 243)
+[    0.224188] io scheduler mq-deadline registered
+[    0.224301] io scheduler kyber registered
+[    0.224531] io scheduler bfq registered
+[    0.229856] riscv-plic: plic@c000000: mapped 95 interrupts with 2 handlers for 4 contexts.
+[    0.232064] pci-host-generic 30000000.pci: host bridge /soc/pci@30000000 ranges:
+[    0.232595] pci-host-generic 30000000.pci:       IO 0x0003000000..0x000300ffff -> 0x0000000000
+[    0.232987] pci-host-generic 30000000.pci:      MEM 0x0040000000..0x007fffffff -> 0x0040000000
+[    0.233094] pci-host-generic 30000000.pci:      MEM 0x0400000000..0x07ffffffff -> 0x0400000000
+[    0.233562] pci-host-generic 30000000.pci: Memory resource size exceeds max for 32 bits
+[    0.233967] pci-host-generic 30000000.pci: ECAM at [mem 0x30000000-0x3fffffff] for [bus 00-ff]
+[    0.235114] pci-host-generic 30000000.pci: PCI host bridge to bus 0000:00
+[    0.235381] pci_bus 0000:00: root bus resource [bus 00-ff]
+[    0.235479] pci_bus 0000:00: root bus resource [io  0x0000-0xffff]
+[    0.235561] pci_bus 0000:00: root bus resource [mem 0x40000000-0x7fffffff]
+[    0.235623] pci_bus 0000:00: root bus resource [mem 0x400000000-0x7ffffffff]
+[    0.236777] pci 0000:00:00.0: [1b36:0008] type 00 class 0x060000 conventional PCI endpoint
+[    0.239713] pci 0000:00:01.0: [1af4:1000] type 00 class 0x020000 conventional PCI endpoint
+[    0.240518] pci 0000:00:01.0: BAR 0 [io  0x1000-0x101f]
+[    0.240614] pci 0000:00:01.0: BAR 1 [mem 0x40000000-0x40000fff]
+[    0.240700] pci 0000:00:01.0: BAR 4 [mem 0x40004000-0x40007fff 64bit pref]
+[    0.240807] pci 0000:00:01.0: ROM [mem 0x40040000-0x4007ffff pref]
+[    0.242303] pci 0000:00:01.0: ROM [mem 0x40000000-0x4003ffff pref]: assigned
+[    0.242505] pci 0000:00:01.0: BAR 4 [mem 0x400000000-0x400003fff 64bit pref]: assigned
+[    0.242993] pci 0000:00:01.0: BAR 1 [mem 0x40040000-0x40040fff]: assigned
+[    0.243292] pci 0000:00:01.0: BAR 0 [io  0x0020-0x003f]: assigned
+[    0.243831] pci_bus 0000:00: resource 4 [io  0x0000-0xffff]
+[    0.243943] pci_bus 0000:00: resource 5 [mem 0x40000000-0x7fffffff]
+[    0.244008] pci_bus 0000:00: resource 6 [mem 0x400000000-0x7ffffffff]
+[    0.288944] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    0.295935] printk: legacy console [ttyS0] disabled
+[    0.298045] 10000000.serial: ttyS0 at MMIO 0x10000000 (irq = 13, base_baud = 230400) is a 16550A
+[    0.299265] printk: legacy console [ttyS0] enabled
+[    0.299265] printk: legacy console [ttyS0] enabled
+[    0.299607] printk: legacy bootconsole [sbi0] disabled
+[    0.299607] printk: legacy bootconsole [sbi0] disabled
+[    0.330516] loop: module loaded
+[    0.331142] virtio_blk virtio0: 1/0/0 default/read/poll queues
+[    0.333843] virtio_blk virtio0: [vda] 532481 512-byte logical blocks (273 MB/260 MiB)
+[    0.344868]  vda: vda1
+[    0.353628] e1000e: Intel(R) PRO/1000 Network Driver
+[    0.353713] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    0.355130] usbcore: registered new interface driver uas
+[    0.355351] usbcore: registered new interface driver usb-storage
+[    0.356031] mousedev: PS/2 mouse device common for all mice
+[    0.358828] sdhci: Secure Digital Host Controller Interface driver
+[    0.358915] sdhci: Copyright(c) Pierre Ossman
+[    0.359009] Synopsys Designware Multimedia Card Interface Driver
+[    0.359281] sdhci-pltfm: SDHCI platform and OF driver helper
+[    0.360397] usbcore: registered new interface driver usbhid
+[    0.360474] usbhid: USB HID core driver
+[    0.361999] riscv-sbi-mpxy-mbox sbi-mpxy-mbox: mailbox registered with 4 channels
+[    0.362429] riscv-pmu-sbi: SBI PMU extension is available
+[    0.362831] riscv-pmu-sbi: 16 firmware and 18 hardware counters
+[    0.362931] riscv-pmu-sbi: Perf sampling/filtering is not supported as sscof extension is not available
+[    0.365586] optee: probing for conduit method.
+[    0.366165] optee: Probed RPMI OP-TEE channel 0 (dedicated to hart0)
+[    0.366274] optee: Probed RPMI OP-TEE channel 1 (dedicated to hart1)
+[    0.368221] optee: revision 4.8
+[    0.370366] optee: dynamic shared memory is enabled
+[    0.381333] optee: initialized driver
+[    0.384817] NET: Registered PF_INET6 protocol family
+[    0.389595] Segment Routing with IPv6
+[    0.389805] In-situ OAM (IOAM) with IPv6
+[    0.390114] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    0.391881] NET: Registered PF_PACKET protocol family
+[    0.392310] 9pnet: Installing 9P2000 support
+[    0.392560] Key type dns_resolver registered
+[    0.576032] clk: Disabling unused clocks
+[    0.576283] PM: genpd: Disabling unused power domains
+[    0.576407] ALSA device list:
+[    0.576480]   No soundcards found.
+[    0.580452] check access for rdinit=/init failed: -2, ignoring
+[    0.588011] EXT4-fs (vda1): mounting ext2 file system using the ext4 subsystem
+[    0.598516] EXT4-fs (vda1): mounted filesystem aa2b9f20-5a3c-4f36-a2e3-4f086778c5a9 r/w without journal. Quota mode: disabled.
+[    0.598798] VFS: Mounted root (ext2 filesystem) on device 254:1.
+[    0.600694] devtmpfs: mounted
+[    0.633030] Freeing unused kernel image (initmem) memory: 2424K
+[    0.633751] Run /sbin/init as init process
+[    0.741075] EXT4-fs (vda1): re-mounted aa2b9f20-5a3c-4f36-a2e3-4f086778c5a9.
+Saving 256 bits of creditable seed for next boot
+Starting syslogd: OK
+Starting klogd: OK
+Running sysctl: OK
+Starting tee-supplicant: Using device /dev/teepriv0.
+OK
+Starting network: udhcpc: started, v1.37.0
+udhcpc: broadcasting discover
+udhcpc: broadcasting select for <IPv4>, server <IPv4>
+udhcpc: lease of <IPv4> obtained from <IPv4>, lease time 86400
+deleting routers
+adding dns <IPv4>
+OK
+Starting crond: OK
+
+Welcome to Buildroot
+buildroot login: root
+# uname -a; echo __G03_RC1=$?__
+Linux buildroot 6.19.0-rc2 #1 SMP Sat Nov  7 17:49:36 <TZ> 2026 riscv64 GNU/Linux
+__G03_RC1=0__
+# cat /proc/cmdline; echo __G03_RC2=$?__
+console=ttyS0,115200n8 earlycon=sbi rootwait root=/dev/vda1 rw
+__G03_RC2=0__
+# ls -l /dev/tee*; echo __G03_RC3=$?__
+crw-------    1 root     root      245,   0 Jan  1 00:00 /dev/tee0
+crw-------    1 root     root      245,  16 Jan  1 00:00 /dev/teepriv0
+__G03_RC3=0__
+# pidof tee-supplicant; echo __G03_RC4=$?__
+88
+__G03_RC4=0__
+# dmesg | grep -i optee; echo __G03_RC5=$?__
+[    0.000000] OF: reserved mem: 0x00000000f1000000..0x00000000f1ffffff (16384 KiB) nomap non-reusable optee_core@f1000000
+[    0.365586] optee: probing for conduit method.
+[    0.366165] optee: Probed RPMI OP-TEE channel 0 (dedicated to hart0)
+[    0.366274] optee: Probed RPMI OP-TEE channel 1 (dedicated to hart1)
+[    0.368221] optee: revision 4.8
+[    0.370366] optee: dynamic shared memory is enabled
+[    0.381333] optee: initialized driver
+__G03_RC5=0__
+# optee_example_hello_world; echo __G03_RC6=$?__
+optee_example_hello_world: TEEC_Opensession failed with code 0xffff0000 origin 0x3
+__G03_RC6=1__
+# optee_example_random; echo __G03_RC7=$?__
+optee_example_random: TEEC_Opensession failed with code 0xffff0000 origin 0x3
+__G03_RC7=1__
+# optee_example_aes; echo __G03_RC8=$?__
+Prepare session with the TA
+optee_example_aes: TEEC_Opensession failed with code 0xffff0000 origin 0x3
+__G03_RC8=1__
+# optee_example_hotp; echo __G03_RC9=$?__
+optee_example_hotp: TEEC_Opensession failed with code 0xffff0000 origin 0x3
+__G03_RC9=1__
+# optee_example_secure_storage; echo __G03_RC10=$?__
+Prepare session with the TA
+optee_example_secure_storage: TEEC_Opensession failed with code 0xffff0000 origin 0x3
+__G03_RC10=1__
+# xtest; echo __G03_RC11=$?__
+Run test suite with level=0
+
+TEE test application started over default TEE instance
+######################################################
+#
+# regression
+#
+######################################################
+ 
+* regression_1001 Core self tests
+o regression_1001.1 Core self tests
+  regression_1001.1 OK
+o regression_1001.2 Core dt_driver self tests
+  regression_1001.2 OK
+  regression_1001 OK
+ 
+* regression_1002 PTA parameters
+  regression_1002 OK
+ 
+* regression_1003 Core internal read/write mutex
+    Number of parallel threads: 6 (2 writers and 4 readers)
+    Max read concurrency: 2
+    Max read waiters: 2
+    Mean read concurrency: 1.3
+    Mean read waiting: 1.0125
+  regression_1003 OK
+ 
+* regression_1004 Test User Crypt TA
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:507: xtest_teec_open_session( &session, &crypt_user_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1004 FAILED
+ 
+* regression_1005 Many sessions
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:599: xtest_teec_open_session(&sessions[i], &concurrent_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1005 FAILED
+ 
+* regression_1006 Test Basic OS features
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:618: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1006 FAILED
+ 
+* regression_1007 Test Panic
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:642: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1007 FAILED
+ 
+* regression_1008 TEE internal client API
+o regression_1008.1 Invoke command
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:786: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1008.1 FAILED
+o regression_1008.2 Invoke command with timeout
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:807: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1008.2 FAILED
+o regression_1008.3 Create session fail
+n = 0
+  regression_1008.3 OK
+o regression_1008.4 Load corrupt TA
+  regression_1008.4 OK
+  regression_1008 FAILED
+ 
+* regression_1009 TEE Wait
+o regression_1009.1 TEE Wait 0.1s
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:870: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1009.1 FAILED
+o regression_1009.2 TEE Wait 0.5s
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:870: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1009.2 FAILED
+o regression_1009.3 TEE Wait 2s cancel
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:870: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1009.3 FAILED
+o regression_1009.4 TEE Wait 2s
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:870: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1009.4 FAILED
+  regression_1009 FAILED
+ 
+* regression_1010 Invalid memory access
+o regression_1010.1 Invalid memory access 1
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:525: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.1 FAILED
+o regression_1010.2 Invalid memory access 2
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:525: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.2 FAILED
+o regression_1010.3 Invalid memory access 3
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:525: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.3 FAILED
+o regression_1010.4 Invalid memory access 4
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:525: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.4 FAILED
+o regression_1010.5 Invalid memory access 5
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:525: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.5 FAILED
+o regression_1010.6 Invalid memory access 6
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:525: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.6 FAILED
+o regression_1010.7 Invalid memory access 7
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:525: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.7 FAILED
+o regression_1010.8 Invalid memory access 1 with 1024 bytes memref
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:563: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.8 FAILED
+o regression_1010.9 Invalid memory access 2 with 1024 bytes memref
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:563: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.9 FAILED
+o regression_1010.10 Invalid memory access 3 with 1024 bytes memref
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:563: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.10 FAILED
+o regression_1010.11 Invalid memory access 4 with 1024 bytes memref
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:563: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.11 FAILED
+o regression_1010.12 Invalid memory access 5 with 1024 bytes memref
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:563: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.12 FAILED
+o regression_1010.13 Invalid memory access 1 with 65536 bytes memref
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:563: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.13 FAILED
+o regression_1010.14 Invalid memory access 2 with 65536 bytes memref
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:563: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.14 FAILED
+o regression_1010.15 Invalid memory access 3 with 65536 bytes memref
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:563: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.15 FAILED
+o regression_1010.16 Invalid memory access 4 with 65536 bytes memref
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:563: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.16 FAILED
+o regression_1010.17 Invalid memory access 5 with 65536 bytes memref
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:563: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1010.17 FAILED
+  regression_1010 FAILED
+ 
+* regression_1011 Test TA-to-TA features with User Crypt TA
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:962: xtest_teec_open_session(&session, &uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1011 FAILED
+ 
+* regression_1012 Test Single Instance Multi Session features with SIMS TA
+o regression_1012.1 Single Instance Multi Session
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1013: xtest_teec_open_session(&session1, &uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1012.1 FAILED
+  regression_1012 FAILED
+ 
+* regression_1013 Test concurrency with concurrent TA
+o regression_1013.1 Using small concurrency TA
+o regression_1013.1.1 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.1 FAILED
+o regression_1013.1.2 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.2 FAILED
+o regression_1013.1.3 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.3 FAILED
+o regression_1013.1.4 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.4 FAILED
+o regression_1013.1.5 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.5 FAILED
+o regression_1013.1.6 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.6 FAILED
+o regression_1013.1.7 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.7 FAILED
+o regression_1013.1.8 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.8 FAILED
+o regression_1013.1.9 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.9 FAILED
+o regression_1013.1.10 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.10 FAILED
+o regression_1013.1.11 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.11 FAILED
+o regression_1013.1.12 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.12 FAILED
+o regression_1013.1.13 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.13 FAILED
+o regression_1013.1.14 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.14 FAILED
+o regression_1013.1.15 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.15 FAILED
+o regression_1013.1.16 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.16 FAILED
+o regression_1013.1.17 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.17 FAILED
+o regression_1013.1.18 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.18 FAILED
+o regression_1013.1.19 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.19 FAILED
+o regression_1013.1.20 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.20 FAILED
+o regression_1013.1.21 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.21 FAILED
+o regression_1013.1.22 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.22 FAILED
+o regression_1013.1.23 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.1.23 FAILED
+o regression_1013.1.24 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.1.24 FAILED
+    Number of parallel threads: 3
+    Mean concurrency: 0
+  regression_1013.1 FAILED
+o regression_1013.2 Using large concurrency TA
+o regression_1013.2.1 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.1 FAILED
+o regression_1013.2.2 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.2 FAILED
+o regression_1013.2.3 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.3 FAILED
+o regression_1013.2.4 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.4 FAILED
+o regression_1013.2.5 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.5 FAILED
+o regression_1013.2.6 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.6 FAILED
+o regression_1013.2.7 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.7 FAILED
+o regression_1013.2.8 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.8 FAILED
+o regression_1013.2.9 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.9 FAILED
+o regression_1013.2.10 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.10 FAILED
+o regression_1013.2.11 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.11 FAILED
+o regression_1013.2.12 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.12 FAILED
+o regression_1013.2.13 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.13 FAILED
+o regression_1013.2.14 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.14 FAILED
+o regression_1013.2.15 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.15 FAILED
+o regression_1013.2.16 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.16 FAILED
+o regression_1013.2.17 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.17 FAILED
+o regression_1013.2.18 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.18 FAILED
+o regression_1013.2.19 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.19 FAILED
+o regression_1013.2.20 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.20 FAILED
+o regression_1013.2.21 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.21 FAILED
+o regression_1013.2.22 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.22 FAILED
+o regression_1013.2.23 Busy loop repeat 10000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1209: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1221: Expression "max_concurrency > 0" (0 > 0) is false
+  regression_1013.2.23 FAILED
+o regression_1013.2.24 SHA-256 loop repeat 1000
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1255: arg[n].res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1013.2.24 FAILED
+    Number of parallel threads: 3
+    Mean concurrency: 0
+  regression_1013.2 FAILED
+  regression_1013 FAILED
+ 
+* regression_1015 FS hash-tree corner cases
+  regression_1015 OK
+ 
+* regression_1016 Test TA to TA transfers (in/out/inout memrefs on the stack)
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1384: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1016 FAILED
+ 
+* regression_1017 Test coalescing memrefs
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1433: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1017 FAILED
+ 
+* regression_1018 Test memref out of bounds
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1510: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1018 FAILED
+ 
+* regression_1019 Test dynamically linked TA
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1607: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1019 FAILED
+ 
+* regression_1020 Test lockdep algorithm
+ - 1020 -   skip test, feature not implemented
+  regression_1020 OK
+ 
+* regression_1021 Test panic context release
+o regression_1021.1 Multiple Instances Single Session
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1729: xtest_teec_open_session(&cs[0], uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1021.1 FAILED
+o regression_1021.2 Single Instance Multi Sessions
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1729: xtest_teec_open_session(&cs[0], uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1021.2 FAILED
+o regression_1021.3 Single Instance Multi Sessions Keep Alive
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1729: xtest_teec_open_session(&cs[0], uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1021.3 FAILED
+o regression_1021.4 Multi Sessions TA to TA
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1811: xtest_teec_open_session(&cs[0], uuid1, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1021.4 FAILED
+  regression_1021 FAILED
+ 
+* regression_1022 Test dlopen()/dlsym()/dlclose() API
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1912: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1022 FAILED
+ 
+* regression_1023 Test ELF initialization (.init_array)
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:1956: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1023 FAILED
+ 
+* regression_1025 Test memref NULL and/or 0 bytes size
+o regression_1025.1 Invalid NULL buffer memref registration
+  regression_1025.1 OK
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:2046: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1025 FAILED
+ 
+* regression_1026 Session: public login
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:2163: result has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1026 FAILED
+ 
+* regression_1027 Session: user login for current user
+OpenSSL not available, skipping test 1027
+  regression_1027 OK
+ 
+* regression_1028 Session: group login for current user's effective group
+OpenSSL not available, skipping test 1028
+  regression_1028 OK
+ 
+* regression_1029 Test __thread attribute
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:2317: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1029 FAILED
+ 
+* regression_1030 Test dl_iterate_phdr()
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:2352: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1030 FAILED
+ 
+* regression_1031 Test C++ features
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:2381: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1031 FAILED
+ 
+* regression_1032 Register read-only shared memory
+  regression_1032 OK
+ 
+* regression_1033 Test the supplicant plugin framework
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:2467: xtest_teec_open_session(&session, &supp_plugin_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1033 FAILED
+ 
+* regression_1034 Test loading a large TA
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:2597: res has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1034 FAILED
+ 
+* regression_1036 Test PAuth (Pointer Authentication)
+<HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot-m8/output/build/optee-test-custom/host/xtest/regression_1000.c:2748: xtest_teec_open_session(&session, &os_test_ta_uuid, ((void *)0), &ret_orig) has an unexpected value: 0xffff0000 = TEEC_ERROR_GENERIC, expected 0x0 = TEEC_SUCCESS
+  regression_1036 FAILED
+ 
+* regression_1037 Remote attestation
+[    3.664355] xtest[139]: unhandled signal 11 code 0x1 at 0x0000000000000000 in libteec.so.2.0.0[12c0,7fffab187000+3000]
+[    3.664877] CPU: 0 UID: 0 PID: 139 Comm: xtest Not tainted 6.19.0-rc2 #1 NONE 
+[    3.665006] Hardware name: riscv-virtio,qemu (DT)
+[    3.665111] epc : 00007fffab1882c0 ra : 000055556c2b84fe sp : 00007ffff5463e90
+[    3.665191]  gp : 000055556c340138 tp : 00007fffaaf32780 t0 : 0000000000001000
+[    3.665252]  t1 : 000055556c2ab03c t2 : 00007ffff5463d10 s0 : 00007ffff5463ec8
+[    3.665315]  s1 : 00007fffab1bccf8 a0 : 00007ffff5463ec8 a1 : 0000000040025000
+[    3.665378]  a2 : 00007ffff5463cb0 a3 : 00007ffff5463d78 a4 : 0000000000000000
+[    3.665444]  a5 : 0000000000000000 a6 : 00007ffff5463d78 a7 : 000000000000001d
+[    3.665514]  s2 : 00007ffff5463ec8 s3 : 000055556c33f738 s4 : 000055556c3422d0
+[    3.665576]  s5 : 0000000000000000 s6 : 00007ffff5463f80 s7 : 00007fffab1bccf8
+[    3.665639]  s8 : 00007fffab1bd008 s9 : 0000000000000002 s10: 0000000000000014
+[    3.665704]  s11: 0000555581f416f0 t3 : 00007fffab18829e t4 : 00007ffff5463d28
+[    3.665771]  t5 : 00007ffff54635b0 t6 : 00007ffff54635b0
+[    3.665823] status: 8000000200006020 badaddr: 0000000000000000 cause: 000000000000000d
+[    3.665999] Code: 609c e43e 4781 c10d 6118 451c f022 55b7 4002 842a (4308) 0586 
+Segmentation fault
+__G03_RC11=139__
+# poweroff
+# Stopping crond: stopped /usr/sbin/crond (pid 125)
+OK
+Stopping network: OK
+Stopping tee-supplicant: FAIL
+Stopping klogd: OK
+Stopping syslogd: stopped /sbin/syslogd (pid 73)
+OK
+Seeding 256 bits and crediting
+Saving 256 bits of creditable seed for next boot
+umount: devtmpfs busy - remounted read-only
+[    4.158800] EXT4-fs (vda1): re-mounted aa2b9f20-5a3c-4f36-a2e3-4f086778c5a9 ro.
+The system is going down NOW!
+Sent SIGTERM to all processes
+Sent SIGKILL to all processes
+Requesting system poweroff
+[    6.173733] reboot: Power down

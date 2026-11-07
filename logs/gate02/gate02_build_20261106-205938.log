@@ -1,0 +1,207 @@
+
+===== 0. Meta =====
+Gate        : 02 (Buildroot build with pinned sources)
+Mode        : full
+Timestamp   : 20261106-205938
+ProjectRoot : <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction
+Script      : scripts/gate02_build.sh  sha256=609db2e9747802d8b0e691d8918c932b8807d9702cb19dac585453921c1bada8
+Raw log     : logs/gate02/raw/gate02_build_20261106-205938.raw.log  (local only, not published)
+Pins        : buildroot=d7204671a32ca2edc521c35de758ce650ebf1cb6
+              linux=2912ca616fc806dbeeba2e1ac7a157e0843d6987
+              u-boot=32bdb252fab83028768a269fb304b9356547ccbd
+              qemu=9c23f2a7b0b45277693a14074b1aaa827eecdb92
+              opensbi=cdd401f1517b4599b7d08ce13cd83859acc4cbb2
+              optee-os=814978eb15b92c3b97255a8c000f44cd84aac008
+              bm-app=97545c35a74ad387f7790b02a35b0f2b4d29bb6e
+
+===== 1. Pre-checks =====
+[OK]   MemAvailable 16 GiB
+[OK]   free disk 462 GiB
+[OK]   .gitignore contains work/
+[OK]   .gitignore contains logs/**/raw/
+[OK]   .gitignore contains logs/**/G*_checkpoint.md
+[OK]   ports 64320 / 64321 / 2200 are free (used in G03)
+[OK]   Buildroot HEAD d7204671a32ca2edc521c35de758ce650ebf1cb6
+[OK]   no tracked file of the Buildroot tree is modified
+[OK]   utils/config available
+-- local.mk entries --
+[OK]   qemu      url=https://gitlab.com/riseproject/riscv-optee/qemu.git branch=rp016_m1
+[OK]   opensbi   url=https://gitlab.com/riseproject/riscv-optee/opensbi.git branch=rp016_m1
+[OK]   optee-os  url=https://gitlab.com/riseproject/riscv-optee/optee_os.git branch=rp016_m1
+[OK]   bm-app    url=https://gitlab.com/riseproject/riscv-optee/bm-app.git branch=rp016_m1
+
+===== 2. Pin custom/ checkouts (local branch rp016_m1 at the pinned SHA) =====
+
+--- qemu
+$ git -C 'custom/qemu' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/qemu' checkout --quiet -B 'rp016_m1' '9c23f2a7b0b45277693a14074b1aaa827eecdb92'
+[rc=0]
+[OK]   custom/qemu HEAD = 9c23f2a7b0b45277693a14074b1aaa827eecdb92 (branch rp016_m1)
+
+--- opensbi
+$ git -C 'custom/opensbi' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/opensbi' checkout --quiet -B 'rp016_m1' 'cdd401f1517b4599b7d08ce13cd83859acc4cbb2'
+[rc=0]
+[OK]   custom/opensbi HEAD = cdd401f1517b4599b7d08ce13cd83859acc4cbb2 (branch rp016_m1)
+
+--- optee-os
+$ git -C 'custom/optee-os' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/optee-os' checkout --quiet -B 'rp016_m1' '814978eb15b92c3b97255a8c000f44cd84aac008'
+[rc=0]
+[OK]   custom/optee-os HEAD = 814978eb15b92c3b97255a8c000f44cd84aac008 (branch rp016_m1)
+
+--- bm-app
+$ git -C 'custom/bm-app' fetch --quiet --all --tags
+[rc=0]
+$ git -C 'custom/bm-app' checkout --quiet -B 'rp016_m1' '97545c35a74ad387f7790b02a35b0f2b4d29bb6e'
+[rc=0]
+[OK]   custom/bm-app HEAD = 97545c35a74ad387f7790b02a35b0f2b4d29bb6e (branch rp016_m1)
+
+===== 3. Configure (upstream defconfig + Linux / U-Boot pinned in .config) =====
+$ make -s qemu_riscv64_virt_optee_defconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/.config
+#
+[rc=0]
+$ utils/config --file .config --set-str BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION 2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[rc=0]
+$ utils/config --file .config --set-str BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION 32bdb252fab83028768a269fb304b9356547ccbd
+[rc=0]
+$ make -s olddefconfig
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/.config
+#
+[rc=0]
+[OK]   .config BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="2912ca616fc806dbeeba2e1ac7a157e0843d6987"
+[OK]   .config BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION="32bdb252fab83028768a269fb304b9356547ccbd"
+$ make -s --no-print-directory printvars VARS='LINUX_VERSION UBOOT_VERSION OPENSBI_VERSION OPTEE_OS_VERSION QEMU_VERSION OPTEE_CLIENT_VERSION OPTEE_TEST_VERSION OPTEE_EXAMPLES_VERSION'
+[BR] QEMU override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/qemu
+[BR] QEMU branch: rp016_m1
+[BR] OpenSBI override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/opensbi
+[BR] OpenSBI branch: rp016_m1
+[BR] OP-TEE OS override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/optee-os
+[BR] OP-TEE OS branch: rp016_m1
+[BR] Bare-metal app override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/bm-app
+[BR] Bare-metal app branch: rp016_m1
+LINUX_VERSION=2912ca616fc806dbeeba2e1ac7a157e0843d6987
+OPENSBI_VERSION=custom
+OPTEE_CLIENT_VERSION=4.6.0
+OPTEE_EXAMPLES_VERSION=4.6.0
+OPTEE_OS_VERSION=custom
+OPTEE_TEST_VERSION=4.6.0
+QEMU_VERSION=custom
+UBOOT_VERSION=32bdb252fab83028768a269fb304b9356547ccbd
+[rc=0]
+
+===== 4. Build (make -j20) =====
+Full build output : logs/gate02/raw/gate02_make_20261106-205938.raw.log (raw, local only)
+                    logs/gate02/gate02_make_20261106-205938.log (sanitized, written after the build)
+Console shows only Buildroot '>>>' steps and local.mk '[BR]' messages, with timestamps.
+[20:59:45] [BR] QEMU override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/qemu
+[20:59:45] [BR] QEMU branch: rp016_m1
+[20:59:45] [BR] OpenSBI override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/opensbi
+[20:59:45] [BR] OpenSBI branch: rp016_m1
+[20:59:45] [BR] OP-TEE OS override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/optee-os
+[20:59:45] [BR] OP-TEE OS branch: rp016_m1
+[20:59:45] [BR] Bare-metal app override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/bm-app
+[20:59:45] [BR] Bare-metal app branch: rp016_m1
+[21:04:45] [BR] OP-TEE_OS dev tree exists. Fetching updates...
+[21:04:46] [BR] Checking out rp016_m1...
+[21:04:46] [BR] Updating submodules (if any)...
+[21:07:07] [BR] QEMU dev tree exists. Fetching updates...
+[21:07:08] [BR] Checking out rp016_m1...
+[21:07:08] [BR] Updating submodules (if any)...
+[21:09:52] [BR] Installing host-qemu configure wrapper to ignore GIT_DIR...
+[21:10:25] [BR] OpenSBI dev tree exists. Fetching updates...
+[21:10:26] [BR] Checking out rp016_m1...
+[21:10:26] [BR] Updating submodules (if any)...
+[21:19:34] [BR] BM_APP dev tree exists. Fetching updates...
+[21:19:35] [BR] Checking out rp016_m1...
+[21:19:35] [BR] Updating submodules (if any)...
+[21:19:35] [BR] Building bare-metal app from <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/bm-app...
+[21:19:35] [BR] Generating start-qemu-bm.sh...
+$ make -j20
+[rc=0]
+Elapsed : 19 min 52 s
+[OK]   build finished
+
+===== 5. Verify the commits actually used =====
+[OK]   custom/qemu      HEAD = 9c23f2a7b0b45277693a14074b1aaa827eecdb92 = rp016_m1
+[OK]   custom/opensbi   HEAD = cdd401f1517b4599b7d08ce13cd83859acc4cbb2 = rp016_m1
+[OK]   custom/optee-os  HEAD = 814978eb15b92c3b97255a8c000f44cd84aac008 = rp016_m1
+[OK]   custom/bm-app    HEAD = 97545c35a74ad387f7790b02a35b0f2b4d29bb6e = rp016_m1
+[OK]   output/build/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987 (built from the pinned commit)
+       download: dl/linux/linux-2912ca616fc806dbeeba2e1ac7a157e0843d6987-git4.tar.gz
+[OK]   output/build/uboot-32bdb252fab83028768a269fb304b9356547ccbd (built from the pinned commit)
+       download: dl/uboot/uboot-32bdb252fab83028768a269fb304b9356547ccbd-git4.tar.gz
+-- override build directories --
+output/build/host-qemu-custom
+output/build/opensbi-custom
+output/build/optee-os-custom
+
+===== 6. Build artifacts (output/images) =====
+$ ls -l output/images
+total 433012
+-rwxr-xr-x 1 <USER> <USER>     17592 Nov  6 21:19 bm-app.elf
+-rw-r--r-- 1 <USER> <USER>    273120 Nov  6 21:10 fw_dynamic.bin
+-rw-r--r-- 1 <USER> <USER>   1747648 Nov  6 21:10 fw_dynamic.elf
+-rw-r--r-- 1 <USER> <USER>    273080 Nov  6 21:10 fw_jump.bin
+-rw-r--r-- 1 <USER> <USER>   1747224 Nov  6 21:10 fw_jump.elf
+-rw-r--r-- 1 <USER> <USER>  27386880 Nov  6 21:19 Image
+-rwxr-xr-x 1 <USER> <USER>      6907 Nov  6 21:19 qemu_rv64_virt_domain.dtb
+-rw-r--r-- 1 <USER> <USER> 272629760 Nov  6 21:19 rootfs.ext2
+-rw-r--r-- 1 <USER> <USER> 134717440 Nov  6 21:19 rootfs.tar
+-rw-r--r-- 1 <USER> <USER> 272630272 Nov  6 21:19 sdcard.img
+-rwxr-xr-x 1 <USER> <USER>       521 Nov  6 21:19 start-qemu-bm.sh
+-rwxr-xr-x 1 <USER> <USER>      1011 Nov  6 21:19 start-qemu.sh
+-rwxr-xr-x 1 <USER> <USER>    696880 Nov  6 21:04 tee.bin
+-rw-r--r-- 1 <USER> <USER>    635260 Nov  6 21:13 u-boot.bin
+-rw-r--r-- 1 <USER> <USER>   1601867 Nov  6 21:13 u-boot.itb
+-rwxr-xr-x 1 <USER> <USER>   1268440 Nov  6 21:13 u-boot-spl
+[rc=0]
+[OK]   u-boot-spl
+[OK]   u-boot.itb
+[OK]   qemu_rv64_virt_domain.dtb
+[OK]   sdcard.img
+[OK]   start-qemu.sh
+[OK]   fw_jump.bin
+[OK]   bm-app.elf
+[OK]   start-qemu-bm.sh
+[OK]   tee.bin
+[OK]   Image
+[OK]   rootfs.ext2
+-- sha256 of the artifacts (start scripts excluded: they contain host paths) --
+99fac1d9a5f458e7baff9120638458ed5e8b5a8a379dbb93c73f3ba5eb583225  bm-app.elf
+10705fa71fd848c6c4c887f747ffeeead03614235933c0ba4fbecb489c3001f6  fw_dynamic.bin
+9833f9b16b8fa0469722a84a01e6b5b81e9727e36cdd3ba3c7e24ca4d018ae06  fw_dynamic.elf
+de9eabd5c9a89a5e92d696234555d2dae1fff8a925836d7cf66714f349eb2fef  fw_jump.bin
+1d824dbeac50d71fcbc8265f0b158238112e601983ab9175c9c31d1b6da41715  fw_jump.elf
+66e13d43d5071e1cc44245683c192d5f74534c9fa55f9b7c6fd463dbcaa3e8ef  Image
+6e1e8c35e2d2b610ceb69b783e7f96ab6bdf92778855fe4f541b02ebd3697294  qemu_rv64_virt_domain.dtb
+2f1d2e1e33876fc22e047564a0abf42142f30e9a8abd38ecf3e716391aa1d49c  rootfs.ext2
+7a9480377aa0075fc625c72a7c7b856e509884acfc5e0c638b4ca9620793a9cf  rootfs.tar
+cebd9fe83b05be19dfc1064a5736120067dc15501bbf64005f3b37bfdfc4f23b  sdcard.img
+2fe97c472ac8c05c07e6a959af501c0260fd76d5b6f27749a188844b69b4c360  tee.bin
+7068bd390cb098067a275f8975d938e3418e0a8000b93206a7bd5ead3594edfd  u-boot.bin
+a5fde1f241b7308ecb189c699187c8c150ac0b1b27d98d7b55e1d977afb741a9  u-boot.itb
+8758196e225812389df1eafe83875c0d6f988d0359ec71b25c0db1105bb06d9d  u-boot-spl
+
+===== 7. Buildroot host QEMU =====
+$ output/host/bin/qemu-system-riscv64 --version
+QEMU emulator version 10.1.93
+Copyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers
+[rc=0]
+$ du -sh output dl custom
+19G	output
+7.2G	dl
+4.4G	custom
+[rc=0]
+
+===== 9. Summary =====
+Mode            : full
+Failed commands : 0
+Verdict         : BUILD COMPLETED AND VERIFIED
+Next            : upload logs/gate02/gate02_build_20261106-205938.log (the sanitized log) to the chat

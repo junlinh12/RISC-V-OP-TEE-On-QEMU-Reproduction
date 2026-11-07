@@ -1,0 +1,310 @@
+
+===== 0. Meta =====
+Gate        : 01 (Source acquisition, branch survey, version pinning)
+Timestamp   : 20261105-215815
+ProjectRoot : <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction
+Group       : https://gitlab.com/riseproject/riscv-optee
+Baseline    : rp016_m1
+
+===== 1. Remote branches of each component repo =====
+(full lists -> gate01_remote_branches_20261105-215815.txt)
+[OK]   buildroot   34 branches   rp016_m1: d7204671a32ca2edc521c35de758ce650ebf1cb6
+[OK]   optee_os    24 branches   rp016_m1: 814978eb15b92c3b97255a8c000f44cd84aac008
+[OK]   opensbi     30 branches   rp016_m1: cdd401f1517b4599b7d08ce13cd83859acc4cbb2
+[OK]   u-boot      10 branches   rp016_m1: 32bdb252fab83028768a269fb304b9356547ccbd
+[OK]   linux       14 branches   rp016_m1: 2912ca616fc806dbeeba2e1ac7a157e0843d6987
+[OK]   qemu        61 branches   rp016_m1: 9c23f2a7b0b45277693a14074b1aaa827eecdb92
+[OK]   bm-app       8 branches   rp016_m1: 97545c35a74ad387f7790b02a35b0f2b4d29bb6e
+
+===== 2. Clone Buildroot (rp016_m1) =====
+[INFO] work/buildroot already exists - not cloning again
+
+===== 3. Buildroot HEAD (pin this) =====
+$ git branch --show-current
+rp016_m1
+$ git log -1 --format='commit  %H%ndate    %cI%nsubject %s'
+commit  d7204671a32ca2edc521c35de758ce650ebf1cb6
+date    2025-12-15T07:29:30-08:00
+subject make: point all repos to RISE Gitlab
+$ git describe --tags --always
+2024.08-3681-gd7204671a3
+$ git status --short | head -n 20
+
+===== 4. Defconfig (configs/qemu_riscv64_virt_optee_defconfig) =====
+$ cat 'configs/qemu_riscv64_virt_optee_defconfig'
+BR2_riscv=y
+BR2_RISCV_ISA_RVC=y
+BR2_TOOLCHAIN_EXTERNAL=y
+BR2_SYSTEM_DHCP="eth0"
+BR2_ROOTFS_OVERLAY="board/qemu/riscv64-virt-optee/rootfs_overlay"
+BR2_ROOTFS_POST_BUILD_SCRIPT="board/qemu/post-image.sh"
+BR2_ROOTFS_POST_IMAGE_SCRIPT="support/scripts/genimage.sh"
+BR2_ROOTFS_POST_BUILD_SCRIPT_ARGS="$(BR2_DEFCONFIG)"
+BR2_ROOTFS_POST_IMAGE_SCRIPT_ARGS="-c board/qemu/riscv64-virt-optee/genimage_sdcard.cfg"
+BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_CUSTOM_GIT=y
+BR2_LINUX_KERNEL_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/linux.git"
+BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="rp016_m1"
+BR2_LINUX_KERNEL_USE_ARCH_DEFAULT_CONFIG=y
+BR2_LINUX_KERNEL_DTS_SUPPORT=y
+BR2_LINUX_KERNEL_INTREE_DTS_NAME="qemu/qemu_rv64_virt_domain"
+BR2_LINUX_KERNEL_INSTALL_TARGET=y
+BR2_PACKAGE_OPTEE_EXAMPLES=y
+BR2_PACKAGE_OPTEE_TEST=y
+BR2_TARGET_ROOTFS_EXT2=y
+BR2_TARGET_ROOTFS_EXT2_SIZE="260M"
+BR2_TARGET_OPTEE_OS=y
+BR2_TARGET_OPTEE_OS_CUSTOM_GIT=y
+BR2_TARGET_OPTEE_OS_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/optee_os.git"
+BR2_TARGET_OPTEE_OS_CUSTOM_REPO_VERSION="rp016_m1"
+BR2_TARGET_OPTEE_OS_NEEDS_PYTHON_CRYPTOGRAPHY=y
+BR2_TARGET_OPTEE_OS_PLATFORM="virt"
+BR2_TARGET_OPTEE_OS_ADDITIONAL_VARIABLES="ARCH=riscv DEBUG=1 CFG_TEE_CORE_NB_CORE=2 CFG_NUM_THREADS=2 CFG_TEE_CORE_LOG_LEVEL=4 CFG_TEE_TA_LOG_LEVEL=4 CFG_UNWIND=y CFG_IN_TREE_EARLY_TAS=trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c CFG_SEMIHOSTING_CONSOLE=y CFG_SEMIHOSTING_CONSOLE_FILE=NULL CFG_TEE_CORE_DEBUG=y CFG_16550_UART=n CFG_RISCV_PLIC=n CFG_TDDRAM_START=0xF1000000 CFG_TDDRAM_SIZE=0x01000000"
+BR2_TARGET_OPTEE_OS_CORE_IMAGES="tee.bin"
+BR2_TARGET_OPENSBI=y
+BR2_TARGET_OPENSBI_CUSTOM_GIT=y
+BR2_TARGET_OPENSBI_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/opensbi.git"
+BR2_TARGET_OPENSBI_CUSTOM_REPO_VERSION="rp016_m1"
+BR2_TARGET_OPENSBI_PLAT="generic"
+BR2_TARGET_UBOOT=y
+BR2_TARGET_UBOOT_BUILD_SYSTEM_KCONFIG=y
+BR2_TARGET_UBOOT_CUSTOM_GIT=y
+BR2_TARGET_UBOOT_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/u-boot.git"
+BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION="rp016_m1"
+BR2_TARGET_UBOOT_BOARD_DEFCONFIG="qemu-riscv64_spl"
+BR2_TARGET_UBOOT_NEEDS_GNUTLS=y
+BR2_TARGET_UBOOT_NEEDS_OPTEE_TEE=y
+BR2_TARGET_UBOOT_NEEDS_OPTEE_TEE_BIN=y
+BR2_TARGET_UBOOT_NEEDS_OPENSBI=y
+BR2_TARGET_UBOOT_FORMAT_CUSTOM=y
+BR2_TARGET_UBOOT_FORMAT_CUSTOM_NAME="u-boot.itb"
+BR2_TARGET_UBOOT_SPL=y
+BR2_TARGET_UBOOT_SPL_NAME="spl/u-boot-spl"
+BR2_PACKAGE_HOST_GENIMAGE=y
+BR2_PACKAGE_HOST_QEMU=y
+BR2_PACKAGE_HOST_QEMU_SYSTEM_MODE=y
+
+===== 5. Custom sources in the defconfig -> commit SHA =====
+BR2_LINUX_KERNEL
+    url     : https://gitlab.com/riseproject/riscv-optee/linux.git
+    version : rp016_m1
+    -> 2912ca616fc806dbeeba2e1ac7a157e0843d6987  (refs/heads/rp016_m1)
+BR2_TARGET_OPTEE_OS
+    url     : https://gitlab.com/riseproject/riscv-optee/optee_os.git
+    version : rp016_m1
+    -> 814978eb15b92c3b97255a8c000f44cd84aac008  (refs/heads/rp016_m1)
+BR2_TARGET_OPENSBI
+    url     : https://gitlab.com/riseproject/riscv-optee/opensbi.git
+    version : rp016_m1
+    -> cdd401f1517b4599b7d08ce13cd83859acc4cbb2  (refs/heads/rp016_m1)
+BR2_TARGET_UBOOT
+    url     : https://gitlab.com/riseproject/riscv-optee/u-boot.git
+    version : rp016_m1
+    -> 32bdb252fab83028768a269fb304b9356547ccbd  (refs/heads/rp016_m1)
+
+-- other source-related lines (tarballs / custom git / host-qemu / optee packages) --
+3:BR2_TOOLCHAIN_EXTERNAL=y
+11:BR2_LINUX_KERNEL_CUSTOM_GIT=y
+18:BR2_PACKAGE_OPTEE_EXAMPLES=y
+19:BR2_PACKAGE_OPTEE_TEST=y
+22:BR2_TARGET_OPTEE_OS=y
+23:BR2_TARGET_OPTEE_OS_CUSTOM_GIT=y
+24:BR2_TARGET_OPTEE_OS_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/optee_os.git"
+25:BR2_TARGET_OPTEE_OS_CUSTOM_REPO_VERSION="rp016_m1"
+26:BR2_TARGET_OPTEE_OS_NEEDS_PYTHON_CRYPTOGRAPHY=y
+27:BR2_TARGET_OPTEE_OS_PLATFORM="virt"
+28:BR2_TARGET_OPTEE_OS_ADDITIONAL_VARIABLES="ARCH=riscv DEBUG=1 CFG_TEE_CORE_NB_CORE=2 CFG_NUM_THREADS=2 CFG_TEE_CORE_LOG_LEVEL=4 CFG_TEE_TA_LOG_LEVEL=4 CFG_UNWIND=y CFG_IN_TREE_EARLY_TAS=trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c CFG_SEMIHOSTING_CONSOLE=y CFG_SEMIHOSTING_CONSOLE_FILE=NULL CFG_TEE_CORE_DEBUG=y CFG_16550_UART=n CFG_RISCV_PLIC=n CFG_TDDRAM_START=0xF1000000 CFG_TDDRAM_SIZE=0x01000000"
+29:BR2_TARGET_OPTEE_OS_CORE_IMAGES="tee.bin"
+30:BR2_TARGET_OPENSBI=y
+31:BR2_TARGET_OPENSBI_CUSTOM_GIT=y
+32:BR2_TARGET_OPENSBI_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/opensbi.git"
+33:BR2_TARGET_OPENSBI_CUSTOM_REPO_VERSION="rp016_m1"
+34:BR2_TARGET_OPENSBI_PLAT="generic"
+35:BR2_TARGET_UBOOT=y
+36:BR2_TARGET_UBOOT_BUILD_SYSTEM_KCONFIG=y
+37:BR2_TARGET_UBOOT_CUSTOM_GIT=y
+38:BR2_TARGET_UBOOT_CUSTOM_REPO_URL="https://gitlab.com/riseproject/riscv-optee/u-boot.git"
+39:BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION="rp016_m1"
+40:BR2_TARGET_UBOOT_BOARD_DEFCONFIG="qemu-riscv64_spl"
+41:BR2_TARGET_UBOOT_NEEDS_GNUTLS=y
+42:BR2_TARGET_UBOOT_NEEDS_OPTEE_TEE=y
+43:BR2_TARGET_UBOOT_NEEDS_OPTEE_TEE_BIN=y
+44:BR2_TARGET_UBOOT_NEEDS_OPENSBI=y
+45:BR2_TARGET_UBOOT_FORMAT_CUSTOM=y
+46:BR2_TARGET_UBOOT_FORMAT_CUSTOM_NAME="u-boot.itb"
+47:BR2_TARGET_UBOOT_SPL=y
+48:BR2_TARGET_UBOOT_SPL_NAME="spl/u-boot-spl"
+50:BR2_PACKAGE_HOST_QEMU=y
+51:BR2_PACKAGE_HOST_QEMU_SYSTEM_MODE=y
+
+===== 6. Resolved versions of packages without a custom repo (configuration only, nothing is built) =====
+$ make -s qemu_riscv64_virt_optee_defconfig
+In file included from <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/output/build/buildroot-config/zconf.tab.c:2484:
+./util.c: In function ‘file_write_dep’:
+./util.c:86:26: warning: ‘%s’ directive writing 10 or more bytes into a region of size between 1 and 4097 [-Wformat-overflow=]
+   86 |         sprintf(buf2, "%s%s", dir, name);
+      |                          ^~
+./util.c:86:9: note: ‘sprintf’ output 11 or more bytes (assuming 4107) into a destination of size 4097
+   86 |         sprintf(buf2, "%s%s", dir, name);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# configuration written to <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/.config
+#
+
+-- Buildroot package files that reference riseproject --
+(none: these packages use their upstream sources)
+
+-- resolved make variables --
+$ make -s --no-print-directory printvars VARS='QEMU_VERSION QEMU_SOURCE QEMU_SITE OPTEE_CLIENT_VERSION OPTEE_CLIENT_SITE OPTEE_TEST_VERSION OPTEE_TEST_SITE OPTEE_EXAMPLES_VERSION OPTEE_EXAMPLES_SITE TOOLCHAIN_EXTERNAL_BOOTLIN_VERSION TOOLCHAIN_EXTERNAL_BOOTLIN_SOURCE TOOLCHAIN_EXTERNAL_BOOTLIN_SITE'
+[BR] QEMU override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/qemu
+[BR] QEMU branch: rp016_m1
+[BR] OpenSBI override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/opensbi
+[BR] OpenSBI branch: rp016_m1
+[BR] OP-TEE OS override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/optee-os
+[BR] OP-TEE OS branch: rp016_m1
+[BR] Bare-metal app override enabled: <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction/work/buildroot/custom/bm-app
+[BR] Bare-metal app branch: rp016_m1
+OPTEE_CLIENT_SITE=https://github.com/OP-TEE/optee_client/archive/4.6.0
+OPTEE_CLIENT_VERSION=4.6.0
+OPTEE_EXAMPLES_SITE=https://github.com/linaro-swg/optee_examples/archive/4.6.0
+OPTEE_EXAMPLES_VERSION=4.6.0
+OPTEE_TEST_SITE=https://github.com/OP-TEE/optee_test/archive/4.6.0
+OPTEE_TEST_VERSION=4.6.0
+QEMU_SITE=https://download.qemu.org
+QEMU_SOURCE=qemu-custom.tar.xz
+QEMU_VERSION=custom
+TOOLCHAIN_EXTERNAL_BOOTLIN_SITE=https://toolchains.bootlin.com/downloads/releases/toolchains/riscv64-lp64d/tarballs
+TOOLCHAIN_EXTERNAL_BOOTLIN_SOURCE=riscv64-lp64d--glibc--bleeding-edge-2024.05-1.tar.xz
+TOOLCHAIN_EXTERNAL_BOOTLIN_VERSION=2024.05-1
+
+-- selected toolchain / OP-TEE / host-qemu options in output/.config --
+grep: output/.config: No such file or directory
+(none)
+
+===== 7. QEMU start script sources (board/qemu/riscv64-virt-optee) =====
+-- files in board/qemu/riscv64-virt-optee --
+board/qemu/riscv64-virt-optee/genimage_sdcard.cfg
+board/qemu/riscv64-virt-optee/readme.txt
+board/qemu/riscv64-virt-optee/rootfs_overlay/boot/extlinux/extlinux.conf
+
+--- board/qemu/riscv64-virt-optee/readme.txt
+Run Linux in emulation with:
+
+  qemu-system-riscv64 -M virt -cpu rv64,zkr=on -dtb qemu_rv64_virt_domain.dtb -m 4096 -smp 2 -semihosting-config enable=on,target=native -serial tcp:127.0.0.1:64320,server -bios u-boot-spl -device loader,file=u-boot.itb,addr=0x80200000 -device virtio-blk-device,drive=hd0 -drive format=raw,file=sdcard.img,id=hd0,if=none -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp::2200-:22 -nographic # qemu_riscv64_virt_optee_defconfig
+
+The login prompt will appear in the terminal that started Qemu.
+
+Debug:
+
+  $ qemu-system-riscv ... -S -gdb tcp::4680
+
+  Another terminal:
+
+  $ ${CROSS_COMPILE}gdb -ex "target remote 127.0.0.1:4680"
+
+--- board/qemu/riscv64-virt-optee/genimage_sdcard.cfg
+image sdcard.img {
+	hdimage {
+	}
+	partition rootfs {
+		partition-type = 0x83
+		bootable = true
+		image = "rootfs.ext2"
+	}
+}
+
+--- board/qemu/post-image.sh
+#!/bin/bash
+
+QEMU_BOARD_DIR="$(dirname "$0")"
+DEFCONFIG_NAME="$(basename "$2")"
+README_FILES="${QEMU_BOARD_DIR}/*/readme.txt"
+START_QEMU_SCRIPT="${BINARIES_DIR}/start-qemu.sh"
+
+if [[ "${DEFCONFIG_NAME}" =~ ^"qemu_*" ]]; then
+    # Not a Qemu defconfig, can't test.
+    exit 0
+fi
+
+# Search for "# qemu_*_defconfig" tag in all readme.txt files.
+# Qemu command line on multilines using back slash are accepted.
+# shellcheck disable=SC2086 # glob over each readme file
+QEMU_CMD_LINE="$(sed -r ':a; /\\$/N; s/\\\n//; s/\t/ /; ta; /# '"${DEFCONFIG_NAME}"'$/!d; s/#.*//' ${README_FILES})"
+
+if [ -z "${QEMU_CMD_LINE}" ]; then
+    # No Qemu cmd line found, can't test.
+    exit 0
+fi
+
+# Remove output/images path since the script will be in
+# the same directory as the kernel and the rootfs images.
+QEMU_CMD_LINE="${QEMU_CMD_LINE//output\/images\//}"
+
+# Remove -serial stdio if present, keep it as default args
+DEFAULT_ARGS="$(sed -r -e '/-serial stdio/!d; s/.*(-serial stdio).*/\1/' <<<"${QEMU_CMD_LINE}")"
+QEMU_CMD_LINE="${QEMU_CMD_LINE//-serial stdio/}"
+
+# Remove any string before qemu-system-*
+QEMU_CMD_LINE="$(sed -r -e 's/^.*(qemu-system-)/\1/' <<<"${QEMU_CMD_LINE}")"
+
+# Disable graphical output and redirect serial I/Os to console
+case ${DEFCONFIG_NAME} in
+  (qemu_sh4eb_r2d_defconfig|qemu_sh4_r2d_defconfig)
+    # Special case for SH4
+    SERIAL_ARGS="-serial stdio -display none"
+    ;;
+  (*)
+    SERIAL_ARGS="-nographic"
+    ;;
+esac
+
+sed -e "s|@SERIAL_ARGS@|${SERIAL_ARGS}|g" \
+    -e "s|@DEFAULT_ARGS@|${DEFAULT_ARGS}|g" \
+    -e "s|@QEMU_CMD_LINE@|${QEMU_CMD_LINE}|g" \
+    -e "s|@HOST_DIR@|${HOST_DIR}|g" \
+    <"${QEMU_BOARD_DIR}/start-qemu.sh.in" \
+    >"${START_QEMU_SCRIPT}"
+chmod +x "${START_QEMU_SCRIPT}"
+
+--- board/qemu/start-qemu.sh.in
+#!/bin/sh
+
+BINARIES_DIR="${0%/*}/"
+# shellcheck disable=SC2164
+cd "${BINARIES_DIR}"
+
+mode_serial=false
+mode_sys_qemu=false
+while [ "$1" ]; do
+    case "$1" in
+    --serial-only|serial-only) mode_serial=true; shift;;
+    --use-system-qemu) mode_sys_qemu=true; shift;;
+    --) shift; break;;
+    *) echo "unknown option: $1" >&2; exit 1;;
+    esac
+done
+
+if ${mode_serial}; then
+    EXTRA_ARGS='@SERIAL_ARGS@'
+else
+    EXTRA_ARGS='@DEFAULT_ARGS@'
+fi
+
+if ! ${mode_sys_qemu}; then
+    export PATH="@HOST_DIR@/bin:${PATH}"
+fi
+
+exec @QEMU_CMD_LINE@ ${EXTRA_ARGS} "$@"
+
+-- files under board/qemu that mention port 64320 / 64321 --
+board/qemu/riscv64-virt-optee/readme.txt:3:  qemu-system-riscv64 -M virt -cpu rv64,zkr=on -dtb qemu_rv64_virt_domain.dtb -m 4096 -smp 2 -semihosting-config enable=on,target=native -serial tcp:127.0.0.1:64320,server -bios u-boot-spl -device loader,file=u-boot.itb,addr=0x80200000 -device virtio-blk-device,drive=hd0 -drive format=raw,file=sdcard.img,id=hd0,if=none -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp::2200-:22 -nographic # qemu_riscv64_virt_optee_defconfig
+
+===== 8. Size of work/buildroot =====
+$ du -sh .
+211M	.
+$ du -sh output 2>/dev/null || true
+476K	output
+
+===== 9. Summary =====
+[OK]   Buildroot cloned: d7204671a32ca2edc521c35de758ce650ebf1cb6
+Next   : paste this log and gate01_remote_branches_20261105-215815.txt into the chat

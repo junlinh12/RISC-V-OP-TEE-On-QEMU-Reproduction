@@ -1,0 +1,49 @@
+
+===== 0. Meta =====
+Gate        : 05c (m8: boot, optee_examples, full xtest - same driver as G03)
+Mode        : prepare-only
+Timestamp   : 20261107-181011
+ProjectRoot : <HOME>/projects/RISC-V-OP-TEE-On-QEMU-Reproduction
+Script      : scripts/gate05c_xtest.sh  sha256=61542b2c39fe6e285dccc217216997e84e6eee74883ed54d49ca7bb47bcc6821
+Raw log     : logs/gate05/raw/gate05c_m8_xtest_20261107-181011.raw.log  (local only, not published)
+
+===== 1. Safety pre-checks =====
+[OK]   running as an unprivileged user (uid 1000)
+[OK]   Buildroot QEMU: QEMU emulator version 10.1.93
+[OK]   start-qemu.sh puts output/host/bin first in PATH
+[OK]   output/images/u-boot-spl
+[OK]   output/images/u-boot.itb
+[OK]   output/images/qemu_rv64_virt_domain.dtb
+[OK]   output/images/sdcard.img
+[OK]   output/images/start-qemu.sh
+[OK]   output/images/tee.bin
+[OK]   ports 64320 / 64321 / 2200 are free
+[OK]   Python 3.12.3
+[OK]   scripts/gate03_console.py  sha256=df46eb9f55aa706f8c77dfbec077af19673192c50229cecbe8a8367b14513e9a
+-- guest root filesystem (output/target) --
+[INFO] guest root account has no password (Buildroot default)
+[INFO] no SSH server in the guest (dropbear / sshd not installed); port 2200 leads nowhere
+[OK]   guest has /usr/bin/xtest
+[OK]   guest has /usr/sbin/tee-supplicant
+guest optee_example_* : optee_example_acipher optee_example_aes optee_example_hello_world optee_example_hotp optee_example_plugins optee_example_random optee_example_secure_storage 
+guest TEE init scripts: S30tee-supplicant 
+[OK]   start-qemu.sh uses sdcard.img (protected with -snapshot)
+[OK]   start-qemu.sh parses options: QEMU arguments go after '--'
+sdcard.img sha256 before: 5daca318f7b359494cb96c42334d54032dd3c99f2865443397ecb2762392d4db
+
+===== 2. Loopback-only launcher (upstream start-qemu.sh is not modified) =====
+[OK]   m8: CPU extended as in the official instructions: -cpu rv64,zkr=on,v=true,vlen=128,zvkned=on,zvkb=on 
+[OK]   launcher generated: output/images/start-qemu.loopback.sh (only the QEMU line differs: hostfwd, -cpu)
+-- diff start-qemu.sh -> start-qemu.loopback.sh --
+< ... hostfwd=tcp::2200-:22 ...
+> ... hostfwd=tcp:127.0.0.1:2200-:22 ...
+-- QEMU command line used (from the launcher) --
+qemu-system-riscv64 -M virt -cpu rv64,zkr=on,v=true,vlen=128,zvkned=on,zvkb=on -dtb qemu_rv64_virt_domain.dtb -m 4096 -smp 2 -semihosting-config enable=on,target=native -serial tcp:127.0.0.1:64320,server -bios u-boot-spl -device loader,file=u-boot.itb,addr=0x80200000 -device virtio-blk-device,drive=hd0 -drive format=raw,file=sdcard.img,id=hd0,if=none -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp:127.0.0.1:2200-:22 -nographic  ${EXTRA_ARGS} "$@"
+
+[INFO] --prepare-only: QEMU was not started
+
+===== 9. Summary =====
+Mode            : prepare-only
+Failed checks   : 0
+Verdict         : READY - safety checks passed and launcher generated; run without --prepare-only to boot
+Next            : upload logs/gate05/gate05c_m8_xtest_20261107-181011.log and its .sha256 manifest
